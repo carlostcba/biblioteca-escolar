@@ -1,0 +1,104 @@
+<!-- Ejemplo simplificado de libro.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Libro - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/libro.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> > <a href="/catalogo.html">Catálogo</a> > <span id="libro-titulo">Detalle del Libro</span>
+    </div>
+    
+    <div class="libro-detalle">
+      <div class="libro-portada">
+        <img id="libro-imagen" src="/images/book-placeholder.png" alt="Portada del libro">
+      </div>
+      
+      <div class="libro-info">
+        <h2 id="libro-titulo-completo">Título del Libro</h2>
+        <p class="libro-autor" id="libro-autor">Autor del Libro</p>
+        
+        <div class="libro-meta">
+          <div class="meta-item">
+            <span class="meta-label">ISBN:</span>
+            <span id="libro-isbn">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Editorial:</span>
+            <span id="libro-editorial">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Año:</span>
+            <span id="libro-año">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Páginas:</span>
+            <span id="libro-paginas">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Categorías:</span>
+            <span id="libro-categorias">-</span>
+          </div>
+        </div>
+        
+        <div class="libro-disponibilidad">
+          <div class="disponibilidad-info">
+            <span class="disponibilidad-label">Disponibilidad:</span>
+            <span id="libro-estado" class="status-badge">-</span>
+          </div>
+          <div id="ejemplares-info">
+            <span id="ejemplares-disponibles">0</span> de <span id="ejemplares-total">0</span> ejemplares disponibles
+          </div>
+        </div>
+        
+        <div class="libro-acciones">
+          <button id="btn-reservar" class="btn btn-primary" disabled>Reservar</button>
+          <button id="btn-ver-ejemplares" class="btn btn-secondary">Ver Ejemplares</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="libro-contenido">
+      <h3>Descripción</h3>
+      <div id="libro-descripcion" class="libro-descripcion">
+        <!-- Contenido dinámico -->
+      </div>
+      
+      <h3>Tabla de Contenido</h3>
+      <div id="libro-tabla-contenido" class="libro-tabla-contenido">
+        <!-- Contenido dinámico -->
+      </div>
+      
+      <div id="tabla-ejemplares" class="ejemplares-tabla hidden">
+        <h3>Ejemplares</h3>
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Estado</th>
+              <th>Ubicación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="ejemplares-lista">
+            <!-- Contenido dinámico -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  
+  <div id="modal-reserva" class="modal hidden"><!-- Modal para confirmar reservas --></div>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="/js/libro.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!-- Ejemplo simplificado de reservas.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Reservas - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/reservas.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <h2>Gestión de Reservas</h2>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="pendientes">Pendientes</div>
+      <div class="tab" data-tab="listas">Listas para Recoger</div>
+      <div class="tab" data-tab="historial">Historial</div>
+    </div>
+    
+    <div class="filter-bar">
+      <input type="text" id="buscar-usuario" placeholder="Buscar por usuario...">
+      <select id="estado-filtro">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="lista">Lista para recoger</option>
+        <option value="completada">Completada</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="vencida">Vencida</option>
+      </select>
+      <input type="date" id="fecha-desde" placeholder="Desde fecha...">
+      <input type="date" id="fecha-hasta" placeholder="Hasta fecha...">
+      <button id="btn-filtrar" class="btn">Filtrar</button>
+    </div>
+    
+    <div class="tab-content">
+      <div id="reservas-container" class="reservas-lista">
+        <!-- Se llena dinámicamente -->
+        <div class="loader">Cargando reservas...</div>
+      </div>
+    </div>
+    
+    <div class="pagination" id="paginacion">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </main>
+  
+  <div id="modal-detalles" class="modal hidden">
+    <!-- Modal para ver detalles de reserva -->
+  </div>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="/js/reservas.js"></script>
+</body>
+</html>

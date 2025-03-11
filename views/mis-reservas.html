@@ -1,0 +1,56 @@
+<!-- Ejemplo simplificado de mis-reservas.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Reservas - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/mis-reservas.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <h2>Mis Reservas y Préstamos</h2>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="activas">Activas</div>
+      <div class="tab" data-tab="historial">Historial</div>
+    </div>
+    
+    <div class="tab-content">
+      <div id="reservas-container" class="reservas-lista">
+        <!-- Se llena dinámicamente -->
+      </div>
+      
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">📚</div>
+        <h3>No tienes reservas activas</h3>
+        <p>Explora nuestro catálogo para encontrar libros interesantes.</p>
+        <a href="/catalogo.html" class="btn">Ver Catálogo</a>
+      </div>
+    </div>
+    
+    <div class="section-title">
+      <h3>Préstamos Activos</h3>
+    </div>
+    
+    <div id="prestamos-container" class="prestamos-lista">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </main>
+  
+  <div id="modal-cancelar" class="modal hidden">
+    <!-- Modal para confirmar cancelación -->
+  </div>
+  
+  <div id="modal-renovar" class="modal hidden">
+    <!-- Modal para renovar préstamo -->
+  </div>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="/js/mis-reservas.js"></script>
+</body>
+</html>

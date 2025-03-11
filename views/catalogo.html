@@ -1,0 +1,55 @@
+<!-- views/catalogo.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html" class="active">Catálogo</a></li>
+          <li><a href="/importar.html">Importar Libros</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+  <main class="container">
+    <h2>Catálogo de Libros</h2>
+    
+    <div class="filter-bar">
+      <input type="text" id="buscar-titulo" placeholder="Buscar por título...">
+      <input type="text" id="buscar-autor" placeholder="Buscar por autor...">
+      <select id="categoria-filtro">
+        <option value="">Todas las categorías</option>
+        <!-- Se llenará dinámicamente -->
+      </select>
+      <button id="btn-buscar" class="btn">Buscar</button>
+    </div>
+    
+    <div class="libros-grid" id="libros-container">
+      <!-- Se llenará dinámicamente con los libros -->
+      <div class="loader">Cargando libros...</div>
+    </div>
+    
+    <div class="pagination" id="paginacion">
+      <!-- Se llenará dinámicamente -->
+    </div>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
+  
+  <script src="/js/catalogo.js"></script>
+</body>
+</html>

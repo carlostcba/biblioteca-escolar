@@ -1,0 +1,109 @@
+<!-- Ejemplo simplificado de reportes.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/reportes.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <h2>Reportes y Estadísticas</h2>
+    
+    <div class="report-categories">
+      <div class="category active" data-category="prestamos">Préstamos</div>
+      <div class="category" data-category="libros">Libros</div>
+      <div class="category" data-category="usuarios">Usuarios</div>
+      <div class="category" data-category="general">General</div>
+    </div>
+    
+    <div class="report-filters">
+      <div class="filter-group">
+        <label>Periodo:</label>
+        <select id="periodo-select">
+          <option value="mes">Este Mes</option>
+          <option value="trimestre">Último Trimestre</option>
+          <option value="semestre">Último Semestre</option>
+          <option value="anio">Este Año</option>
+          <option value="personalizado">Personalizado</option>
+        </select>
+      </div>
+      
+      <div id="fechas-personalizadas" class="date-range hidden">
+        <div class="filter-group">
+          <label>Desde:</label>
+          <input type="date" id="fecha-desde">
+        </div>
+        <div class="filter-group">
+          <label>Hasta:</label>
+          <input type="date" id="fecha-hasta">
+        </div>
+      </div>
+      
+      <button id="btn-generar" class="btn btn-primary">Generar Reporte</button>
+      <button id="btn-exportar" class="btn btn-secondary">Exportar</button>
+    </div>
+    
+    <div id="report-container" class="report-content">
+      <div class="report-summary">
+        <div class="summary-card">
+          <h3>Total Préstamos</h3>
+          <div class="summary-value" id="total-prestamos">0</div>
+        </div>
+        
+        <div class="summary-card">
+          <h3>Préstamos Activos</h3>
+          <div class="summary-value" id="prestamos-activos">0</div>
+        </div>
+        
+        <div class="summary-card">
+          <h3>Devoluciones</h3>
+          <div class="summary-value" id="total-devoluciones">0</div>
+        </div>
+        
+        <div class="summary-card">
+          <h3>Tasa de Devolución</h3>
+          <div class="summary-value" id="tasa-devolucion">0%</div>
+        </div>
+      </div>
+      
+      <div class="report-charts">
+        <div class="chart-container">
+          <h3>Préstamos por Día</h3>
+          <div id="chart-diario" class="chart"></div>
+        </div>
+        
+        <div class="chart-container">
+          <h3>Distribución por Categoría</h3>
+          <div id="chart-categorias" class="chart"></div>
+        </div>
+      </div>
+      
+      <div class="report-tables">
+        <div class="table-container">
+          <h3>Libros Más Prestados</h3>
+          <table class="tabla" id="tabla-libros">
+            <!-- Se llena dinámicamente -->
+          </table>
+        </div>
+        
+        <div class="table-container">
+          <h3>Usuarios Más Activos</h3>
+          <table class="tabla" id="tabla-usuarios">
+            <!-- Se llena dinámicamente -->
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/reportes.js"></script>
+</body>
+</html>

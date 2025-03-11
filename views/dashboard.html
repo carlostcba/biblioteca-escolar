@@ -1,0 +1,79 @@
+<!-- Ejemplo simplificado de dashboard.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <h2>Dashboard</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Préstamos Activos</h3>
+        <div class="stat-value" id="prestamos-activos">0</div>
+        <div class="stat-trend">+5% esta semana</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Préstamos Vencidos</h3>
+        <div class="stat-value" id="prestamos-vencidos">0</div>
+        <div class="stat-trend">-2% esta semana</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Ejemplares Disponibles</h3>
+        <div class="stat-value" id="ejemplares-disponibles">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Reservas Pendientes</h3>
+        <div class="stat-value" id="reservas-pendientes">0</div>
+      </div>
+    </div>
+    
+    <div class="dashboard-grid">
+      <div class="panel">
+        <h3>Actividad Reciente</h3>
+        <ul id="actividad-reciente" class="activity-list">
+          <!-- Se llena dinámicamente -->
+        </ul>
+      </div>
+      
+      <div class="panel">
+        <h3>Distribución por Nivel</h3>
+        <div id="grafico-niveles" class="chart-container"></div>
+      </div>
+    </div>
+    
+    <div class="quick-actions">
+      <a href="/prestamos/nuevo" class="action-card">
+        <div class="action-icon">📚</div>
+        <div class="action-title">Nuevo Préstamo</div>
+      </a>
+      <a href="/devoluciones" class="action-card">
+        <div class="action-icon">📋</div>
+        <div class="action-title">Registrar Devolución</div>
+      </a>
+      <a href="/reservas" class="action-card">
+        <div class="action-icon">🔖</div>
+        <div class="action-title">Gestionar Reservas</div>
+      </a>
+      <a href="/reportes" class="action-card">
+        <div class="action-icon">📊</div>
+        <div class="action-title">Generar Reportes</div>
+      </a>
+    </div>
+  </main>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

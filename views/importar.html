@@ -1,0 +1,81 @@
+<!-- views/importar.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Importar Libros - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li><a href="/importar.html" class="active">Importar Libros</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+  <main class="container">
+    <h2>Importar Libros desde CSV</h2>
+    
+    <div class="instructions">
+      <h3>Instrucciones</h3>
+      <p>Sube un archivo CSV con los siguientes campos:</p>
+      <ul>
+        <li>ISBN</li>
+        <li>Titulo</li>
+        <li>Autor (Nombre y Apellido)</li>
+        <li>Editorial</li>
+        <li>FechaPublicacion (YYYY-MM-DD)</li>
+        <li>Edicion</li>
+        <li>Idioma</li>
+        <li>Paginas (Número)</li>
+        <li>Descripcion</li>
+        <li>Categorias (separadas por comas)</li>
+        <li>Ejemplares (Número de copias a crear)</li>
+      </ul>
+      
+      <a href="/template/libros_template.csv" download class="btn btn-secondary">Descargar Plantilla</a>
+    </div>
+    
+    <div class="upload-form">
+      <form id="importForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="archivo">Selecciona archivo CSV:</label>
+          <input type="file" id="archivo" name="archivo" accept=".csv" required>
+        </div>
+        
+        <button type="submit" class="btn">Importar Libros</button>
+      </form>
+    </div>
+    
+    <div id="resultados" class="resultados hidden">
+      <h3>Resultados de la Importación</h3>
+      <div class="stats">
+        <p>Total de registros: <span id="total">0</span></p>
+        <p>Exitosos: <span id="exitosos">0</span></p>
+        <p>Fallidos: <span id="fallidos">0</span></p>
+      </div>
+      
+      <div id="errores" class="errores hidden">
+        <h4>Errores</h4>
+        <ul id="lista-errores"></ul>
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
+  
+  <script src="/js/importar.js"></script>
+</body>
+</html>

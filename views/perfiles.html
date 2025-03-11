@@ -1,0 +1,113 @@
+<!-- Ejemplo simplificado de perfiles.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración de Perfiles - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/perfiles.css">
+</head>
+<body>
+  <header><!-- Navegación --></header>
+  
+  <main class="container">
+    <h2>Administración de Perfiles</h2>
+    
+    <div class="actions-bar">
+      <button id="btn-nuevo-usuario" class="btn btn-primary">Nuevo Usuario</button>
+      <button id="btn-importar-usuarios" class="btn btn-secondary">Importar Usuarios</button>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Alumnos</h3>
+        <div class="stat-value" id="total-alumnos">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Total Docentes</h3>
+        <div class="stat-value" id="total-docentes">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Nivel Primaria</h3>
+        <div class="stat-value" id="total-primaria">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Nivel Secundaria</h3>
+        <div class="stat-value" id="total-secundaria">0</div>
+      </div>
+    </div>
+    
+    <div class="filter-bar">
+      <select id="tipo-usuario-filtro">
+        <option value="">Todos los tipos</option>
+        <option value="alumno">Alumnos</option>
+        <option value="docente">Docentes</option>
+        <option value="personal">Personal</option>
+      </select>
+      
+      <select id="nivel-filtro">
+        <option value="">Todos los niveles</option>
+        <option value="primaria">Primaria</option>
+        <option value="secundaria_basica">Secundaria Básica</option>
+        <option value="secundaria_tecnica">Secundaria Técnica</option>
+      </select>
+      
+      <select id="grado-filtro">
+        <option value="">Todos los grados</option>
+        <option value="1">1°</option>
+        <option value="2">2°</option>
+        <option value="3">3°</option>
+        <option value="4">4°</option>
+        <option value="5">5°</option>
+        <option value="6">6°</option>
+      </select>
+      
+      <select id="turno-filtro">
+        <option value="">Todos los turnos</option>
+        <option value="matutino">Matutino</option>
+        <option value="vespertino">Vespertino</option>
+        <option value="tiempo_completo">Tiempo Completo</option>
+      </select>
+      
+      <input type="text" id="buscar-texto" placeholder="Buscar por nombre, ID...">
+      <button id="btn-filtrar" class="btn">Buscar</button>
+    </div>
+    
+    <div class="usuarios-tabla">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Nivel</th>
+            <th>Grado/Grupo</th>
+            <th>Turno</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usuarios-lista">
+          <!-- Se llena dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="pagination" id="paginacion">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </main>
+  
+  <div id="modal-usuario" class="modal hidden">
+    <!-- Modal para crear/editar usuario -->
+  </div>
+  
+  <footer><!-- Pie de página --></footer>
+  
+  <script src="/js/perfiles.js"></script>
+</body>
+</html>
