@@ -6,7 +6,7 @@ const router = express.Router();
 const autorRoutes = require('./autor.routes');
 const editorialRoutes = require('./editorial.routes');
 const categoriaRoutes = require('./categoria.routes');
-//const libroRoutes = require('./libro.routes');
+const libroRoutes = require('./libro.routes');
 const ejemplarRoutes = require('./ejemplar.routes');
 const importarRoutes = require('./importar.routes');
 

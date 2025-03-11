@@ -2,21 +2,24 @@
 require('dotenv').config();
 
 module.exports = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'BibliotecaEscolar',
-  port: parseInt(process.env.DB_PORT, 10) || 1433,
   dialect: 'mssql',
-  options: {
-    trustServerCertificate: true, // Cambiar a false en producción
-    enableArithAbort: true,
-    instanceName: 'SQLEXPRESS'
+  host: 'localhost',
+  username: 'sa',
+  password: 'LaSalle2599',
+  database: 'BibliotecaEscolar',
+  dialectOptions: {
+    options: {
+      encrypt: false,  // No usar cifrado
+      trustServerCertificate: false, // No confiar en certificados
+      instanceName: 'SQLEXPRESS',
+      connectTimeout: 30000
+    }
   },
   pool: {
-    max: 10,
+    max: 5,
     min: 0,
     acquire: 30000,
     idle: 10000
-  }
+  },
+  logging: console.log
 };

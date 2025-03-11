@@ -18,26 +18,42 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'views'))); // Agregado para servir HTML de 'views'
 
 // Conexión a la base de datos
 const db = require('./models');
 
 // Sincronizar con la base de datos
-db.sequelize.sync({ alter: true })
+db.sequelize.sync({ force: false }) // Cambiado de alter: true a force: false
   .then(() => {
     console.log('Base de datos sincronizada');
   })
   .catch(err => {
     console.error('Error al sincronizar la base de datos:', err);
+    console.log('La aplicación continuará funcionando sin la sincronización completa');
   });
 
 // Rutas API
 const apiRoutes = require('./routes/api.routes');
 app.use('/api', apiRoutes);
 
-// Ruta para la página principal
+// Rutas para las vistas HTML
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+// Agregar rutas específicas para otros HTML
+app.get('/catalogo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'catalogo.html'));
+});
+
+app.get('/importar', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'importar.html'));
+});
+
+// Ruta de captura para 404
+app.use((req, res) => {
+  res.status(404).send('Página no encontrada');
 });
 
 // Iniciar el servidor

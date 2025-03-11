@@ -44,27 +44,51 @@ exports.importarLibros = async (req, res) => {
       .on('end', async () => {
         resultados.total = registros.length;
         
-        // Procesar cada registro
+        // Procesar cada registro individualmente sin transacción global
         for (const registro of registros) {
+          // Crear transacción individual para cada libro
+          const transaction = await db.sequelize.transaction({
+            isolationLevel: 'READ COMMITTED'
+          });
+          
           try {
             // Buscar o crear el autor
             const nombreAutor = registro.Autor.split(' ');
             const apellidoAutor = nombreAutor.pop(); // Último elemento como apellido
             const nombrePila = nombreAutor.join(' '); // Resto como nombre
             
-            const [autor] = await Autor.findOrCreate({
+            let autor = await Autor.findOne({
               where: {
                 Nombre: nombrePila,
                 Apellido: apellidoAutor
-              }
+              },
+              transaction
             });
             
+            if (!autor) {
+              autor = await Autor.create({
+                Nombre: nombrePila,
+                Apellido: apellidoAutor,
+                FechaCreacion: new Date(),
+                FechaActualizacion: new Date()
+              }, { transaction });
+            }
+            
             // Buscar o crear la editorial
-            const [editorial] = await Editorial.findOrCreate({
+            let editorial = await Editorial.findOne({
               where: {
                 Nombre: registro.Editorial
-              }
+              },
+              transaction
             });
+            
+            if (!editorial) {
+              editorial = await Editorial.create({
+                Nombre: registro.Editorial,
+                FechaCreacion: new Date(),
+                FechaActualizacion: new Date()
+              }, { transaction });
+            }
             
             // Crear el libro
             const libro = await Libro.create({
@@ -76,23 +100,35 @@ exports.importarLibros = async (req, res) => {
               Edicion: registro.Edicion,
               Idioma: registro.Idioma || 'Español',
               Paginas: parseInt(registro.Paginas, 10) || null,
-              Descripcion: registro.Descripcion
-            });
+              Descripcion: registro.Descripcion,
+              FechaCreacion: new Date(),
+              FechaActualizacion: new Date()
+            }, { transaction });
             
             // Procesar categorías
             if (registro.Categorias) {
-              const nombresCategorias = registro.Categorias.split(',').map(c => c.trim());
+              const nombresCategorias = registro.Categorias.split(';').map(c => c.trim());
               
               for (const nombreCategoria of nombresCategorias) {
-                const [categoria] = await Categoria.findOrCreate({
+                let categoria = await Categoria.findOne({
                   where: {
                     Nombre: nombreCategoria
-                  }
+                  },
+                  transaction
                 });
                 
-                // Agregar categoría al libro
+                if (!categoria) {
+                  categoria = await Categoria.create({
+                    Nombre: nombreCategoria,
+                    FechaCreacion: new Date(),
+                    FechaActualizacion: new Date()
+                  }, { transaction });
+                }
+                
+                // Agregar categoría al libro usando el método de asociación de Sequelize
                 await db.sequelize.query(
-                  `INSERT INTO LibroCategorias (LibroID, CategoriaID) VALUES (${libro.LibroID}, ${categoria.CategoriaID})`
+                  `INSERT INTO LibroCategorias (LibroID, CategoriaID) VALUES (${libro.LibroID}, ${categoria.CategoriaID})`,
+                  { transaction }
                 );
               }
             }
@@ -105,17 +141,26 @@ exports.importarLibros = async (req, res) => {
                 LibroID: libro.LibroID,
                 CodigoBarras: `${registro.ISBN || 'LIB'}-${libro.LibroID}-${i}`,
                 NumeroCopia: i,
-                Estado: 'Disponible'
-              });
+                Estado: 'Disponible',
+                FechaCreacion: new Date(),
+                FechaActualizacion: new Date()
+              }, { transaction });
             }
             
+            // Confirmar la transacción
+            await transaction.commit();
             resultados.exitosos++;
           } catch (error) {
+            // Revertir la transacción en caso de error
+            await transaction.rollback();
+            
             resultados.fallidos++;
             resultados.errores.push({
               libro: registro.Titulo,
               error: error.message
             });
+            
+            console.error(`Error al importar ${registro.Titulo}:`, error);
           }
         }
         
@@ -129,6 +174,11 @@ exports.importarLibros = async (req, res) => {
         });
       });
   } catch (err) {
+    // Si hay un error general, asegurarse de limpiar el archivo si existe
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
     res.status(500).send({
       message: err.message || "Ocurrió un error durante la importación de libros."
     });

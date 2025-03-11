@@ -2,19 +2,39 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config/db.config');
 
-const sequelize = new Sequelize(
-  config.database,
-  config.user,
-  config.password,
-  {
-    host: config.host,
-    dialect: config.dialect,
-    port: config.port,
-    dialectOptions: config.options,
-    pool: config.pool,
-    logging: console.log
-  }
-);
+const sequelize = new Sequelize('BibliotecaEscolar', 'sa', 'LaSalle2599', {
+  dialect: 'mssql',
+  host: 'localhost',
+  dialectOptions: {
+    options: {
+      instanceName: 'SQLEXPRESS',
+      encrypt: false,
+      trustServerCertificate: false,
+      connectTimeout: 30000,
+      // Configuración adicional para manejo de transacciones
+      isolationLevel: 'READ COMMITTED'
+    }
+  },
+  // Configuración del manejo de transacciones
+  transactionType: 'IMMEDIATE',
+  isolationLevel: 'READ COMMITTED',
+  define: {
+    // Configuración global para todos los modelos
+    timestamps: false, // Desactivamos el manejo automático de timestamps
+    freezeTableName: true, // Evita la pluralización automática de nombres de tabla
+    // No intentar alterar las tablas existentes
+    sync: { alter: false, force: false }
+  },
+  // Configuración de pool de conexiones
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  },
+  // Menos logs para tener más limpia la consola
+  logging: process.env.NODE_ENV === 'development' ? console.log : false
+});
 
 const db = {};
 
