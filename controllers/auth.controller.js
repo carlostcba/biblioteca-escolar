@@ -32,6 +32,9 @@ exports.signup = async (req, res) => {
       });
     }
     
+    // Verificar si se requiere aprobación (esto podría venir de configuración del sistema)
+    const requiereAprobacion = true; // Por defecto, requerir aprobación
+    
     // Crear usuario en la base de datos
     const usuario = await Usuario.create({
       nombre: req.body.nombre,
@@ -39,7 +42,7 @@ exports.signup = async (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
       tipo_usuario: req.body.tipo_usuario,
-      estado: 'activo'
+      estado: requiereAprobacion ? 'pendiente' : 'activo'
     });
     
     // Crear perfil escolar según el tipo de usuario
@@ -58,7 +61,8 @@ exports.signup = async (req, res) => {
         usuario_id: usuario.id,
         tipo_perfil: 'docente',
         departamento: req.body.departamento,
-        codigo_empleado: req.body.codigo_empleado
+        codigo_empleado: req.body.codigo_empleado,
+        asignaturas: req.body.asignaturas ? JSON.stringify(req.body.asignaturas) : null
       });
     }
     
@@ -97,16 +101,21 @@ exports.signup = async (req, res) => {
     }
     
     // Asignar roles al usuario
-    await usuario.setRoles(roles);
+    if (roles && roles.length > 0) {
+      await usuario.setRoles(roles);
+    }
     
     res.status(201).send({
-      message: "Usuario registrado exitosamente.",
+      message: requiereAprobacion ? 
+        "Usuario registrado exitosamente. Tu cuenta será revisada por un administrador antes de ser activada." :
+        "Usuario registrado exitosamente.",
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre,
         apellido: usuario.apellido,
         email: usuario.email,
-        tipo_usuario: usuario.tipo_usuario
+        tipo_usuario: usuario.tipo_usuario,
+        estado: usuario.estado
       }
     });
     
@@ -147,10 +156,22 @@ exports.signin = async (req, res) => {
       });
     }
     
-    // Verificar si el usuario está activo
-    if (usuario.estado !== 'activo') {
+    // Verificar el estado del usuario
+    if (usuario.estado === 'pendiente') {
       return res.status(403).send({
-        message: "Tu cuenta está desactivada. Contacta al administrador."
+        message: "Tu cuenta está pendiente de aprobación. Por favor, espera a que un administrador la active."
+      });
+    }
+    
+    if (usuario.estado === 'inactivo') {
+      return res.status(403).send({
+        message: "Tu cuenta está desactivada. Por favor, contacta al administrador."
+      });
+    }
+    
+    if (usuario.estado === 'suspendido') {
+      return res.status(403).send({
+        message: "Tu cuenta ha sido suspendida. Por favor, contacta al administrador."
       });
     }
     
@@ -172,7 +193,7 @@ exports.signin = async (req, res) => {
       config.secret,
       {
         algorithm: 'HS256',
-        expiresIn: config.jwtExpiration // 24 horas por defecto
+        expiresIn: 86400 // 24 horas
       }
     );
     
@@ -186,8 +207,16 @@ exports.signin = async (req, res) => {
       });
     }
     
+    // Actualizar última conexión
+    await usuario.update({
+      ultima_conexion: new Date()
+    });
+    
     // Preparar respuesta
-    const authorities = usuario.roles.map(role => `ROLE_${role.nombre.toUpperCase()}`);
+    let authorities = [];
+    if (usuario.roles && usuario.roles.length > 0) {
+      authorities = usuario.roles.map(role => `ROLE_${role.nombre.toUpperCase()}`);
+    }
     
     res.status(200).send({
       token,
@@ -235,7 +264,7 @@ exports.checkAuth = async (req, res) => {
     // Verificar si el usuario está activo
     if (usuario.estado !== 'activo') {
       return res.status(403).send({
-        message: "Tu cuenta está desactivada."
+        message: "Tu cuenta no está activa."
       });
     }
     
@@ -250,7 +279,10 @@ exports.checkAuth = async (req, res) => {
     }
     
     // Preparar respuesta
-    const authorities = usuario.roles.map(role => `ROLE_${role.nombre.toUpperCase()}`);
+    let authorities = [];
+    if (usuario.roles && usuario.roles.length > 0) {
+      authorities = usuario.roles.map(role => `ROLE_${role.nombre.toUpperCase()}`);
+    }
     
     res.status(200).send({
       usuario: {

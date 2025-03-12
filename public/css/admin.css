@@ -1,0 +1,265 @@
+/* Estilos para la administración de usuarios */
+.nav-tabs {
+    display: flex;
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .nav-tabs li {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-right: 10px;
+  }
+  
+  .nav-tabs li.active {
+    border-bottom: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: bold;
+  }
+  
+  .tab-pane {
+    display: none;
+  }
+  
+  .tab-pane.active {
+    display: block;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+  }
+  
+  .table tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .btn-sm {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    border: none;
+    margin-right: 5px;
+  }
+  
+  .btn-sm:last-child {
+    margin-right: 0;
+  }
+  
+  .btn-info {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btn-success {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .btn-warning {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .text-success {
+    color: #2ecc71;
+  }
+  
+  .text-warning {
+    color: #f39c12;
+  }
+  
+  .text-danger {
+    color: #e74c3c;
+  }
+  
+  .text-secondary {
+    color: #7f8c8d;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .filter-bar input,
+  .filter-bar select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .empty-state {
+    padding: 20px;
+    text-align: center;
+    color: #7f8c8d;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+  }
+  
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 0;
+    width: 70%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover {
+    color: black;
+  }
+  
+  .usuario-info {
+    margin-bottom: 20px;
+  }
+  
+  .perfil-info {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .perfil-info h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+  }
+  
+  .action-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  
+  /* Paginación */
+  .pagination-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .page-item {
+    margin: 0 5px;
+  }
+  
+  .btn-page {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .page-item.active .btn-page {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .page-item.disabled .btn-page {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 768px) {
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .action-buttons button {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    .modal-content {
+      width: 90%;
+      margin: 5% auto;
+    }
+    
+    .filter-bar {
+      flex-direction: column;
+    }
+    
+    .filter-bar input, 
+    .filter-bar select,
+    .filter-bar button {
+      width: 100%;
+    }
+  }

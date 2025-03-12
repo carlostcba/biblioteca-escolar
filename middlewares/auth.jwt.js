@@ -4,10 +4,9 @@ const config = require('../config/auth.config.js');
 const db = require('../models');
 const Usuario = db.Usuario;
 const Rol = db.Rol;
+const Permiso = db.Permiso;
 
-/**
- * Verifica si el token JWT es válido
- */
+// Verificar si el token JWT es válido
 const verifyToken = (req, res, next) => {
   let token = req.headers['x-access-token'] || req.headers['authorization'];
   
@@ -25,10 +24,32 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, config.secret);
     req.userId = decoded.id;
-    next();
+    
+    // Verificar si el usuario está activo
+    Usuario.findByPk(req.userId)
+      .then(usuario => {
+        if (!usuario) {
+          return res.status(404).send({
+            message: "Usuario no encontrado."
+          });
+        }
+        
+        if (usuario.estado !== 'activo') {
+          return res.status(403).send({
+            message: "Tu cuenta no está activa. Por favor, contacta con el administrador."
+          });
+        }
+        
+        next();
+      })
+      .catch(err => {
+        res.status(500).send({
+          message: "Error al verificar el usuario."
+        });
+      });
   } catch (error) {
     return res.status(401).send({
-      message: "No autorizado. Token inválido o expirado."
+      message: "No autorizado"
     });
   }
 };
@@ -117,7 +138,7 @@ const hasPermission = (permissionName) => {
           model: Rol,
           as: 'roles',
           include: [{
-            model: db.Permiso,
+            model: Permiso,
             as: 'permisos',
             through: { attributes: [] }
           }]

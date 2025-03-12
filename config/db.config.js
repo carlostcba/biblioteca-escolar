@@ -12,7 +12,8 @@ module.exports = {
       encrypt: false,  // No usar cifrado
       trustServerCertificate: false, // No confiar en certificados
       instanceName: 'SQLEXPRESS',
-      connectTimeout: 30000
+      connectTimeout: 60000,
+      requestTimeout: 60000
     }
   },
   pool: {

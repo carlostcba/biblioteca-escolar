@@ -1,0 +1,137 @@
+<!-- views/admin-usuarios.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración de Usuarios - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/dashboard.html">Dashboard</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li><a href="/admin-usuarios.html" class="active">Usuarios</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+  <main class="container">
+    <h2>Administración de Usuarios</h2>
+    
+    <ul class="nav-tabs">
+      <li class="active" data-tab="pendientes">Pendientes de Aprobación</li>
+      <li data-tab="todos">Todos los Usuarios</li>
+    </ul>
+    
+    <div class="tab-content">
+      <div id="pendientes" class="tab-pane active">
+        <div class="filter-bar">
+          <button id="btn-aprobar-seleccionados" class="btn btn-success">Aprobar Seleccionados</button>
+          <button id="btn-rechazar-seleccionados" class="btn btn-danger">Rechazar Seleccionados</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all-pendientes"></th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Fecha de Registro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="pendientes-lista">
+              <!-- Se llena dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="pendientes-empty" class="empty-state hidden">
+          <p>No hay usuarios pendientes de aprobación</p>
+        </div>
+      </div>
+      
+      <div id="todos" class="tab-pane">
+        <div class="filter-bar">
+          <input type="text" id="buscar-usuario" placeholder="Buscar por nombre o email...">
+          <select id="filtro-estado">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+            <option value="suspendido">Suspendidos</option>
+            <option value="pendiente">Pendientes</option>
+          </select>
+          <select id="filtro-tipo">
+            <option value="">Todos los tipos</option>
+            <option value="alumno">Alumnos</option>
+            <option value="docente">Docentes</option>
+            <option value="personal">Personal</option>
+          </select>
+          <button id="btn-filtrar" class="btn">Filtrar</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="usuarios-lista">
+              <!-- Se llena dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="pagination" id="usuarios-paginacion">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Modal para detalles de usuario -->
+  <div id="usuario-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalles del Usuario</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="usuario-detalle">
+          <!-- Se llena dinámicamente -->
+        </div>
+        
+        <div class="action-buttons">
+          <button id="btn-aprobar-usuario" class="btn btn-success">Aprobar Usuario</button>
+          <button id="btn-activar-usuario" class="btn btn-primary">Activar Usuario</button>
+          <button id="btn-desactivar-usuario" class="btn btn-warning">Desactivar Usuario</button>
+          <button id="btn-suspender-usuario" class="btn btn-danger">Suspender Usuario</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
+  
+  <script src="/js/admin-usuarios.js"></script>

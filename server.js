@@ -46,6 +46,10 @@ app.get('/importar', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'importar.html'));
 });
 
+// Rutas para la gestión de usuarios
+const usuarioRoutes = require('./routes/usuario.routes');
+app.use('/api/usuarios', usuarioRoutes);
+
 // Agregar rutas para autenticación
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
