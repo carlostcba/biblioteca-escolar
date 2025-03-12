@@ -118,6 +118,8 @@ npm start
 
 El servidor estará disponible en `http://localhost:3000`
 
+- **[## Guia para despliegue en Docker](./docker-guide.md)**
+
 ## Roles y permisos
 
 El sistema implementa los siguientes roles:
