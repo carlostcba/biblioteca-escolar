@@ -29,16 +29,22 @@ module.exports = (sequelize, DataTypes) => {
     FechaCreacion: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
+      defaultValue: sequelize.literal('GETDATE()') // Usa función nativa de SQL Server
     },
     FechaActualizacion: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
+      defaultValue: sequelize.literal('GETDATE()') // Usa función nativa de SQL Server
     }
   }, {
     tableName: 'Autores',
-    timestamps: false // Desactivamos el manejo automático de timestamps
+    timestamps: false, // Desactivamos el manejo automático de timestamps
+    hooks: {
+      // Hook para actualizar automáticamente FechaActualizacion al modificar
+      beforeUpdate: (autor) => {
+        autor.FechaActualizacion = new Date();
+      }
+    }
   });
 
   return Autor;

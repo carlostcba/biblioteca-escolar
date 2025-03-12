@@ -10,14 +10,11 @@ const sequelize = new Sequelize('BibliotecaEscolar', 'sa', 'LaSalle2599', {
       instanceName: 'SQLEXPRESS',
       encrypt: false,
       trustServerCertificate: false,
-      connectTimeout: 30000,
-      // Configuración adicional para manejo de transacciones
-      isolationLevel: 'READ COMMITTED'
+      connectTimeout: 30000
+      // Quitar la configuración de isolationLevel que causa el error
     }
   },
-  // Configuración del manejo de transacciones
-  transactionType: 'IMMEDIATE',
-  isolationLevel: 'READ COMMITTED',
+  // Quitar transactionType e isolationLevel
   define: {
     // Configuración global para todos los modelos
     timestamps: false, // Desactivamos el manejo automático de timestamps
