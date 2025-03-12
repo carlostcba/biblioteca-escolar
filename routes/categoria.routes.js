@@ -1,26 +1,21 @@
 // routes/categoria.routes.js
 const express = require('express');
 const router = express.Router();
+const categoriaController = require('../controllers/categoria.controller');
 
-// Rutas temporales para evitar errores
-router.post('/', (req, res) => {
-  res.status(501).send({ message: "Funcionalidad no implementada aún" });
-});
+// Obtener todas las categorías
+router.get('/', categoriaController.obtenerTodos);
 
-router.get('/', (req, res) => {
-  res.status(501).send({ message: "Funcionalidad no implementada aún" });
-});
+// Obtener una sola categoría por ID
+router.get('/:id', categoriaController.obtenerPorId);
 
-router.get('/:id', (req, res) => {
-  res.status(501).send({ message: "Funcionalidad no implementada aún" });
-});
+// Crear una nueva categoría
+router.post('/', categoriaController.crear);
 
-router.put('/:id', (req, res) => {
-  res.status(501).send({ message: "Funcionalidad no implementada aún" });
-});
+// Actualizar una categoría por ID
+router.put('/:id', categoriaController.actualizar);
 
-router.delete('/:id', (req, res) => {
-  res.status(501).send({ message: "Funcionalidad no implementada aún" });
-});
+// Eliminar una categoría por ID
+router.delete('/:id', categoriaController.eliminar);
 
 module.exports = router;

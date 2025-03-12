@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de libro.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,13 +6,29 @@
   <title>Detalle del Libro - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/libro.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li><a href="/mis-reservas.html">Mis Reservas</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> > <a href="/catalogo.html">Catálogo</a> > <span id="libro-titulo">Detalle del Libro</span>
+      <a href="/"><i class="fas fa-home"></i> Inicio</a>
+      <span>/</span>
+      <a href="/catalogo.html">Catálogo</a>
+      <span>/</span>
+      <span id="libro-titulo">Detalle del Libro</span>
     </div>
     
     <div class="libro-detalle">
@@ -22,67 +37,83 @@
       </div>
       
       <div class="libro-info">
-        <h2 id="libro-titulo-completo">Título del Libro</h2>
-        <p class="libro-autor" id="libro-autor">Autor del Libro</p>
+        <h2 id="libro-titulo-completo">Cargando título...</h2>
+        <p class="libro-autor" id="libro-autor">Cargando autor...</p>
         
         <div class="libro-meta">
           <div class="meta-item">
-            <span class="meta-label">ISBN:</span>
-            <span id="libro-isbn">-</span>
+            <span class="meta-label">ISBN</span>
+            <span id="libro-isbn" class="meta-value">-</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Editorial:</span>
-            <span id="libro-editorial">-</span>
+            <span class="meta-label">Editorial</span>
+            <span id="libro-editorial" class="meta-value">-</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Año:</span>
-            <span id="libro-año">-</span>
+            <span class="meta-label">Año</span>
+            <span id="libro-año" class="meta-value">-</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Páginas:</span>
-            <span id="libro-paginas">-</span>
+            <span class="meta-label">Páginas</span>
+            <span id="libro-paginas" class="meta-value">-</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Categorías:</span>
-            <span id="libro-categorias">-</span>
+            <span class="meta-label">Idioma</span>
+            <span id="libro-idioma" class="meta-value">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Edición</span>
+            <span id="libro-edicion" class="meta-value">-</span>
           </div>
         </div>
         
         <div class="libro-disponibilidad">
           <div class="disponibilidad-info">
             <span class="disponibilidad-label">Disponibilidad:</span>
-            <span id="libro-estado" class="status-badge">-</span>
+            <span id="libro-estado" class="status-badge status-available">Cargando...</span>
           </div>
           <div id="ejemplares-info">
-            <span id="ejemplares-disponibles">0</span> de <span id="ejemplares-total">0</span> ejemplares disponibles
+            <i class="fas fa-book"></i> <span id="ejemplares-disponibles">0</span> de <span id="ejemplares-total">0</span> ejemplares disponibles
+          </div>
+        </div>
+        
+        <div id="categorias-container">
+          <span class="meta-label">Categorías:</span>
+          <div id="libro-categorias" class="categorias-list">
+            <!-- Las categorías se cargarán dinámicamente -->
           </div>
         </div>
         
         <div class="libro-acciones">
-          <button id="btn-reservar" class="btn btn-primary" disabled>Reservar</button>
-          <button id="btn-ver-ejemplares" class="btn btn-secondary">Ver Ejemplares</button>
+          <button id="btn-reservar" class="btn btn-primary" disabled>
+            <i class="fas fa-bookmark"></i> Reservar
+          </button>
+          <button id="btn-ver-ejemplares" class="btn btn-secondary">
+            <i class="fas fa-list"></i> Ver Ejemplares
+          </button>
         </div>
       </div>
     </div>
     
     <div class="libro-contenido">
-      <h3>Descripción</h3>
+      <h3><i class="fas fa-info-circle"></i> Descripción</h3>
       <div id="libro-descripcion" class="libro-descripcion">
-        <!-- Contenido dinámico -->
+        <div class="loader">Cargando descripción</div>
       </div>
       
-      <h3>Tabla de Contenido</h3>
+      <h3><i class="fas fa-list-ul"></i> Tabla de Contenido</h3>
       <div id="libro-tabla-contenido" class="libro-tabla-contenido">
-        <!-- Contenido dinámico -->
+        <div class="loader">Cargando tabla de contenido</div>
       </div>
       
       <div id="tabla-ejemplares" class="ejemplares-tabla hidden">
-        <h3>Ejemplares</h3>
+        <h3><i class="fas fa-book"></i> Ejemplares</h3>
         <table class="tabla">
           <thead>
             <tr>
               <th>Código</th>
               <th>Estado</th>
+              <th>Condición</th>
               <th>Ubicación</th>
               <th>Acciones</th>
             </tr>
@@ -92,12 +123,61 @@
           </tbody>
         </table>
       </div>
+      
+      <div class="libro-metadata-extra">
+        <div class="metadata-title"><i class="fas fa-tags"></i> Información adicional</div>
+        <div class="metadata-grid">
+          <div class="metadata-item">
+            <span class="metadata-label">Formato</span>
+            <span id="libro-formato" class="metadata-value">-</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Tipo Material</span>
+            <span id="libro-tipo-material" class="metadata-value">-</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Clasificación Dewey</span>
+            <span id="libro-dewey" class="metadata-value">-</span>
+          </div>
+          <div class="metadata-item">
+            <span class="metadata-label">Clasificación LCC</span>
+            <span id="libro-lcc" class="metadata-value">-</span>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
   
-  <div id="modal-reserva" class="modal hidden"><!-- Modal para confirmar reservas --></div>
+  <div id="modal-reserva" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Confirmar Reserva</h3>
+        <button class="modal-close" id="cerrar-modal-x">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas reservar el libro <strong id="modal-titulo-libro"></strong>?</p>
+        <p>La reserva estará disponible por 48 horas una vez que el libro sea procesado.</p>
+      </div>
+      <div class="modal-actions">
+        <button id="cancelar-reserva" class="btn btn-secondary">Cancelar</button>
+        <button id="confirmar-reserva" class="btn btn-primary">Confirmar Reserva</button>
+      </div>
+    </div>
+  </div>
   
-  <footer><!-- Pie de página --></footer>
+  <!-- Toast para notificaciones -->
+  <div id="notification-toast" class="notification hidden">
+    <div class="notification-content">
+      <span id="notification-message"></span>
+      <button class="notification-close">&times;</button>
+    </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025 - Todos los derechos reservados.</p>
+    </div>
+  </footer>
   
   <script src="/js/libro.js"></script>
 </body>

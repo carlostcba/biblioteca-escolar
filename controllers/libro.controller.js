@@ -107,7 +107,19 @@ exports.obtenerTodos = async (req, res) => {
     
     // Filtrar por categoría
     if (categoria) {
-      includes[2].where = { Nombre: { [Op.like]: `%${categoria}%` } };
+      // Modificar aquí: cambiar la búsqueda por nombre a búsqueda por ID
+      const categoriaId = parseInt(categoria, 10);
+      if (!isNaN(categoriaId)) {
+        // Si es un número válido, filtrar por ID de categoría
+        includes[2].where = { 
+          CategoriaID: categoriaId 
+        };
+      } else {
+        // Si no es un número, mantener la búsqueda por nombre (por compatibilidad)
+        includes[2].where = { 
+          Nombre: { [Op.like]: `%${categoria}%` } 
+        };
+      }
     }
 
     const { count, rows } = await Libro.findAndCountAll({
@@ -125,6 +137,7 @@ exports.obtenerTodos = async (req, res) => {
       currentPage: parseInt(page)
     });
   } catch (err) {
+    console.error("Error en obtenerTodos (libros):", err);
     res.status(500).send({
       message: err.message || "Ocurrió un error al obtener los libros."
     });

@@ -1,5 +1,11 @@
 // public/js/libro.js
 document.addEventListener('DOMContentLoaded', function() {
+    // Ocultar el breadcrumb
+    const breadcrumb = document.querySelector('.breadcrumb');
+    if (breadcrumb) {
+        breadcrumb.style.display = 'none';
+    }
+
     // Elementos DOM
     const libroTitulo = document.getElementById('libro-titulo');
     const libroTituloCompleto = document.getElementById('libro-titulo-completo');
