@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBuscar = document.getElementById('btn-buscar');
     
     let paginaActual = 1;
-    const tamanioPagina = 12;
+    const tamanioPagina = 10;
     
     // Cargar categorías
     cargarCategorias();

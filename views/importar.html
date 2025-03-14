@@ -6,6 +6,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Importar Libros - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Estilos adicionales para la importación */
+    .progress-container {
+      margin: 30px 0;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 24px;
+      background-color: #4a6da7;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-shadow: 0 0 3px rgba(0,0,0,0.5);
+      min-width: 30px;
+      width: 0%;
+    }
+    
+    .progress-text {
+      margin-top: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .stats p {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .stats span {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    
+    #total { color: #3182ce; }
+    #exitosos { color: #48bb78; }
+    #fallidos { color: #e53e3e; }
+    
+    .errores {
+      background-color: #fff5f5;
+      border-left: 4px solid #e53e3e;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    
+    .errores h4 {
+      color: #e53e3e;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    
+    .errores ul {
+      margin-left: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 25px;
+      border-radius: 4px;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .toast.show {
+      opacity: 1;
+    }
+    
+    .toast-info {
+      background-color: #3182ce;
+    }
+    
+    .toast-success {
+      background-color: #48bb78;
+    }
+    
+    .toast-error {
+      background-color: #e53e3e;
+    }
+    
+    /* Optimización para pantallas pequeñas */
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -24,9 +138,9 @@
   <main class="container">
     <h2>Importar Libros desde CSV</h2>
     
-    <div class="instructions">
+<!--    <div class="instructions">
       <h3>Instrucciones</h3>
-      <p>Sube un archivo CSV con los siguientes campos:</p>
+      <p>Sube un archivo CSV con los siguientes campos. Este proceso puede importar miles de libros de forma eficiente.</p>
       <ul>
         <li>ISBN</li>
         <li>Titulo</li>
@@ -37,12 +151,12 @@
         <li>Idioma</li>
         <li>Paginas (Número)</li>
         <li>Descripcion</li>
-        <li>Categorias (separadas por comas)</li>
+        <li>Categorias (separadas por punto y coma)</li>
         <li>Ejemplares (Número de copias a crear)</li>
       </ul>
       
       <a href="/template/libros_template.csv" download class="btn btn-secondary">Descargar Plantilla</a>
-    </div>
+    </div> -->
     
     <div class="upload-form">
       <form id="importForm" enctype="multipart/form-data">
@@ -51,16 +165,66 @@
           <input type="file" id="archivo" name="archivo" accept=".csv" required>
         </div>
         
+        <div class="form-group">
+          <label>
+            <input type="checkbox" name="actualizar" value="true"> 
+            Actualizar libros existentes (por ISBN)
+          </label>
+        </div>
+        
         <button type="submit" class="btn">Importar Libros</button>
       </form>
+    </div>
+
+    <!-- Agregar esto después del formulario de importación en importar.html -->
+<div class="import-actions">
+  <button id="btn-check-import" class="btn btn-secondary">
+    Verificar importación activa
+  </button>
+  <span id="import-id-display" class="import-id hidden"></span>
+</div>
+
+<!-- Añadir este script al final de importar.html -->
+<script>
+  document.getElementById('btn-check-import').addEventListener('click', function() {
+    const activeImportID = localStorage.getItem('activeImportID');
+    if (activeImportID) {
+      document.getElementById('import-id-display').textContent = `ID de importación activa: ${activeImportID}`;
+      document.getElementById('import-id-display').classList.remove('hidden');
+      
+      // Verificar estado actual
+      fetch(`/api/importar/estado/${activeImportID}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.estado === 'en_proceso') {
+            showToast(`Importación en curso: ${data.progreso}% completado`, 'info');
+          } else if (data.estado === 'completado') {
+            showToast(`Importación completada: ${data.resultados.exitosos} exitosos de ${data.resultados.total} registros`, 'success');
+          } else {
+            showToast(`Estado de importación: ${data.estado}`, 'info');
+          }
+        })
+        .catch(error => {
+          showToast('No se pudo verificar la importación', 'error');
+        });
+    } else {
+      showToast('No hay importación activa', 'info');
+    }
+  });
+</script>
+    
+    <!-- Barra de progreso -->
+    <div id="progress-container" class="progress-container hidden">
+      <div id="progress-bar" class="progress-bar">0%</div>
+      <div id="progress-text" class="progress-text">Iniciando importación...</div>
     </div>
     
     <div id="resultados" class="resultados hidden">
       <h3>Resultados de la Importación</h3>
       <div class="stats">
-        <p>Total de registros: <span id="total">0</span></p>
-        <p>Exitosos: <span id="exitosos">0</span></p>
-        <p>Fallidos: <span id="fallidos">0</span></p>
+        <p>Total de registros<span id="total">0</span></p>
+        <p>Exitosos<span id="exitosos">0</span></p>
+        <p>Fallidos<span id="fallidos">0</span></p>
       </div>
       
       <div id="errores" class="errores hidden">
