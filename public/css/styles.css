@@ -524,3 +524,55 @@ header nav {
   border-radius: 4px;
   font-size: 14px;
 }
+
+/* Estilos para los filtros alfabéticos */
+.filtro-alfabetico {
+  margin-bottom: 15px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-label {
+  font-weight: bold;
+  margin-right: 15px;
+  width: 50px;
+  display: inline-block;
+  color: #4a6da7;
+}
+
+.alfabeto-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.letra-filtro {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 3px;
+  background-color: #f0f0f0;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.letra-filtro:hover {
+  background-color: #e0e0e0;
+}
+
+.letra-filtro.active {
+  background-color: #4a6da7;
+  color: white;
+}
+
+/* Adaptación para el botón "Todos" y "0-9" que son más largos */
+.letra-filtro:first-child,
+.letra-filtro:nth-child(2) {
+  width: auto;
+  padding: 0 10px;
+}

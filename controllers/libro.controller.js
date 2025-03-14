@@ -64,7 +64,7 @@ exports.crear = async (req, res) => {
 // Obtener todos los libros (con opciones de filtrado y paginación)
 exports.obtenerTodos = async (req, res) => {
   try {
-    const { titulo, autor, categoria, page = 1, size = 10 } = req.query;
+    const { titulo, autor, categoria, page = 1, size = 10, tituloInicia, autorInicia } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
     
@@ -95,6 +95,23 @@ exports.obtenerTodos = async (req, res) => {
       condicion.Titulo = { [Op.like]: `%${titulo}%` };
     }
     
+    // Filtrar por letra inicial del título
+    if (tituloInicia) {
+      if (tituloInicia === '0-9') {
+        // Filtrar por títulos que empiezan con números (0-9)
+        condicion.Titulo = { 
+          ...condicion.Titulo,
+          [Op.like]: '[0-9]%' 
+        };
+      } else {
+        // Filtrar por títulos que empiezan con una letra específica
+        condicion.Titulo = { 
+          ...condicion.Titulo, 
+          [Op.like]: `${tituloInicia}%` 
+        };
+      }
+    }
+    
     // Filtrar por autor
     if (autor) {
       includes[0].where = {
@@ -105,9 +122,29 @@ exports.obtenerTodos = async (req, res) => {
       };
     }
     
+    // Filtrar por letra inicial del apellido del autor
+    if (autorInicia) {
+      const autorWhere = includes[0].where || {};
+      
+      if (autorInicia === '0-9') {
+        // Filtrar por apellidos que empiezan con números (0-9)
+        autorWhere[Op.or] = [
+          ...(autorWhere[Op.or] || []),
+          { Apellido: { [Op.like]: '[0-9]%' } }
+        ];
+      } else {
+        // Filtrar por apellidos que empiezan con una letra específica
+        autorWhere[Op.or] = [
+          ...(autorWhere[Op.or] || []),
+          { Apellido: { [Op.like]: `${autorInicia}%` } }
+        ];
+      }
+      
+      includes[0].where = autorWhere;
+    }
+    
     // Filtrar por categoría
     if (categoria) {
-      // Modificar aquí: cambiar la búsqueda por nombre a búsqueda por ID
       const categoriaId = parseInt(categoria, 10);
       if (!isNaN(categoriaId)) {
         // Si es un número válido, filtrar por ID de categoría
