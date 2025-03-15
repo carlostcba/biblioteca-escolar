@@ -1,4 +1,3 @@
-<!-- views/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,9 +13,14 @@
       <h1>Biblioteca Escolar</h1>
       <nav>
         <ul class="nav-left">
-          <li><a href="/">Inicio</a></li>
+          <li><a href="/" class="active">Inicio</a></li>
           <li><a href="/catalogo.html">Catálogo</a></li>
-          <li class="admin-only hidden"><a href="/importar.html">Importar Libros</a></li>
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
         </ul>
         <ul class="nav-right">
           <!-- Opciones para usuarios no autenticados -->
@@ -46,6 +50,7 @@
       <div class="hero-buttons">
         <a href="/catalogo.html" class="btn btn-primary"><i class="fas fa-book"></i> Explorar Catálogo</a>
         <a href="/login.html" class="btn btn-secondary guest-only"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
+        <a href="/dashboard.html" class="btn btn-secondary bibliotecario-only hidden"><i class="fas fa-tachometer-alt"></i> Ir al Dashboard</a>
       </div>
     </section>
     

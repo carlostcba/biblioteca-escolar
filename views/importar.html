@@ -1,4 +1,3 @@
-<!-- views/importar.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Importar Libros - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     /* Estilos adicionales para la importación */
     .progress-container {
@@ -126,10 +126,27 @@
     <div class="container">
       <h1>Biblioteca Escolar</h1>
       <nav>
-        <ul>
+        <ul class="nav-left">
           <li><a href="/">Inicio</a></li>
           <li><a href="/catalogo.html">Catálogo</a></li>
-          <li><a href="/importar.html" class="active">Importar Libros</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="bibliotecario-only"><a href="/importar.html" class="active">Importar</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
         </ul>
       </nav>
     </div>
@@ -138,7 +155,7 @@
   <main class="container">
     <h2>Importar Libros desde CSV</h2>
     
-<!--    <div class="instructions">
+    <div class="instructions">
       <h3>Instrucciones</h3>
       <p>Sube un archivo CSV con los siguientes campos. Este proceso puede importar miles de libros de forma eficiente.</p>
       <ul>
@@ -156,7 +173,7 @@
       </ul>
       
       <a href="/template/libros_template.csv" download class="btn btn-secondary">Descargar Plantilla</a>
-    </div> -->
+    </div>
     
     <div class="upload-form">
       <form id="importForm" enctype="multipart/form-data">
@@ -172,46 +189,16 @@
           </label>
         </div>
         
-        <button type="submit" class="btn">Importar Libros</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-file-import"></i> Importar Libros</button>
       </form>
     </div>
 
-    <!-- Agregar esto después del formulario de importación en importar.html -->
-<div class="import-actions">
-  <button id="btn-check-import" class="btn btn-secondary">
-    Verificar importación activa
-  </button>
-  <span id="import-id-display" class="import-id hidden"></span>
-</div>
-
-<!-- Añadir este script al final de importar.html -->
-<script>
-  document.getElementById('btn-check-import').addEventListener('click', function() {
-    const activeImportID = localStorage.getItem('activeImportID');
-    if (activeImportID) {
-      document.getElementById('import-id-display').textContent = `ID de importación activa: ${activeImportID}`;
-      document.getElementById('import-id-display').classList.remove('hidden');
-      
-      // Verificar estado actual
-      fetch(`/api/importar/estado/${activeImportID}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.estado === 'en_proceso') {
-            showToast(`Importación en curso: ${data.progreso}% completado`, 'info');
-          } else if (data.estado === 'completado') {
-            showToast(`Importación completada: ${data.resultados.exitosos} exitosos de ${data.resultados.total} registros`, 'success');
-          } else {
-            showToast(`Estado de importación: ${data.estado}`, 'info');
-          }
-        })
-        .catch(error => {
-          showToast('No se pudo verificar la importación', 'error');
-        });
-    } else {
-      showToast('No hay importación activa', 'info');
-    }
-  });
-</script>
+    <div class="import-actions">
+      <button id="btn-check-import" class="btn btn-secondary">
+        <i class="fas fa-sync-alt"></i> Verificar importación activa
+      </button>
+      <span id="import-id-display" class="import-id hidden"></span>
+    </div>
     
     <!-- Barra de progreso -->
     <div id="progress-container" class="progress-container hidden">
@@ -240,6 +227,52 @@
     </div>
   </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/importar.js"></script>
+  <script>
+  document.getElementById('btn-check-import').addEventListener('click', function() {
+    const activeImportID = localStorage.getItem('activeImportID');
+    if (activeImportID) {
+      document.getElementById('import-id-display').textContent = `ID de importación activa: ${activeImportID}`;
+      document.getElementById('import-id-display').classList.remove('hidden');
+      
+      // Verificar estado actual
+      fetch(`/api/importar/estado/${activeImportID}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.estado === 'en_proceso') {
+            showToast(`Importación en curso: ${data.progreso}% completado`, 'info');
+          } else if (data.estado === 'completado') {
+            showToast(`Importación completada: ${data.resultados.exitosos} exitosos de ${data.resultados.total} registros`, 'success');
+          } else {
+            showToast(`Estado de importación: ${data.estado}`, 'info');
+          }
+        })
+        .catch(error => {
+          showToast('No se pudo verificar la importación', 'error');
+        });
+    } else {
+      showToast('No hay importación activa', 'info');
+    }
+  });
+  
+  function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }, 5000);
+  }
+  </script>
 </body>
 </html>

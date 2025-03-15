@@ -13,10 +13,32 @@
     <div class="container">
       <h1>Biblioteca Escolar</h1>
       <nav>
-        <ul>
+        <ul class="nav-left">
           <li><a href="/">Inicio</a></li>
           <li><a href="/catalogo.html">Catálogo</a></li>
-        <!--   <li><a href="/mis-reservas.html">Mis Reservas</a></li> -->
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <!-- Opciones para usuarios no autenticados -->
+          <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+          <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+          
+          <!-- Opciones para usuarios autenticados -->
+          <li class="user-only hidden"><a href="/mis-reservas.html"><i class="fas fa-bookmark"></i> Mis Reservas</a></li>
+          <li class="user-only hidden dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
         </ul>
       </nav>
     </div>
@@ -85,12 +107,18 @@
         </div>
         
         <div class="libro-acciones">
-          <button id="btn-reservar" class="btn btn-primary" disabled>
+          <button id="btn-reservar" class="btn btn-primary user-only hidden" disabled>
             <i class="fas fa-bookmark"></i> Reservar
           </button>
           <button id="btn-ver-ejemplares" class="btn btn-secondary">
             <i class="fas fa-list"></i> Ver Ejemplares
           </button>
+          <a href="/prestamos.html?libro-id=" class="btn btn-success bibliotecario-only hidden" id="btn-prestar">
+            <i class="fas fa-exchange-alt"></i> Prestar
+          </a>
+          <a href="/login.html" class="btn btn-primary guest-only">
+            <i class="fas fa-sign-in-alt"></i> Iniciar sesión para reservar
+          </a>
         </div>
       </div>
     </div>
@@ -179,6 +207,7 @@
     </div>
   </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/libro.js"></script>
 </body>
 </html>

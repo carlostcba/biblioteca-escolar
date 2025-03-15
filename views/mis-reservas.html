@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de mis-reservas.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +6,38 @@
   <title>Mis Reservas - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/mis-reservas.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li><a href="/mis-reservas.html" class="active">Mis Reservas</a></li>
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Mis Reservas y Préstamos</h2>
@@ -43,14 +71,47 @@
   
   <div id="modal-cancelar" class="modal hidden">
     <!-- Modal para confirmar cancelación -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cancelar Reserva</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas cancelar la reserva del libro <strong id="modal-titulo-cancelar"></strong>?</p>
+        <p>Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-no-cancelar" class="btn btn-secondary">No, mantener reserva</button>
+        <button id="btn-si-cancelar" class="btn btn-danger">Sí, cancelar reserva</button>
+      </div>
+    </div>
   </div>
   
   <div id="modal-renovar" class="modal hidden">
     <!-- Modal para renovar préstamo -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Renovar Préstamo</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Deseas renovar el préstamo del libro <strong id="modal-titulo-renovar"></strong>?</p>
+        <p>La fecha de devolución se extenderá por <span id="dias-renovacion">7</span> días adicionales.</p>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-renovacion" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-confirmar-renovacion" class="btn btn-primary">Confirmar Renovación</button>
+      </div>
+    </div>
   </div>
   
-  <footer><!-- Pie de página --></footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/mis-reservas.js"></script>
 </body>
 </html>

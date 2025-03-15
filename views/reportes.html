@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de reportes.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +6,37 @@
   <title>Reportes - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/reportes.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only"><a href="/reportes.html" class="active">Reportes</a></li>
+          <li class="admin-only"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Reportes y Estadísticas</h2>
@@ -101,8 +128,13 @@
     </div>
   </main>
   
-  <footer><!-- Pie de página --></footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/js/reportes.js"></script>
 </body>

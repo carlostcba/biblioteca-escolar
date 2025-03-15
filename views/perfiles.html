@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de perfiles.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,16 +6,44 @@
   <title>Administración de Perfiles - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/perfiles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only"><a href="/perfiles.html" class="active">Perfiles</a></li>
+          <li class="admin-only"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Administración de Perfiles</h2>
     
     <div class="actions-bar">
-      <button id="btn-nuevo-usuario" class="btn btn-primary">Nuevo Usuario</button>
-      <button id="btn-importar-usuarios" class="btn btn-secondary">Importar Usuarios</button>
+      <button id="btn-nuevo-usuario" class="btn btn-primary"><i class="fas fa-user-plus"></i> Nuevo Usuario</button>
+      <button id="btn-importar-usuarios" class="btn btn-secondary"><i class="fas fa-file-import"></i> Importar Usuarios</button>
     </div>
     
     <div class="stats-grid">
@@ -104,10 +131,144 @@
   
   <div id="modal-usuario" class="modal hidden">
     <!-- Modal para crear/editar usuario -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-titulo">Nuevo Usuario</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-usuario">
+          <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="tipo_usuario">Tipo de Usuario:</label>
+            <select id="tipo_usuario" name="tipo_usuario" required>
+              <option value="alumno">Alumno</option>
+              <option value="docente">Docente</option>
+              <option value="personal">Personal</option>
+              <option value="bibliotecario" class="admin-only hidden">Bibliotecario</option>
+              <option value="administrador" class="admin-only hidden">Administrador</option>
+            </select>
+          </div>
+          
+          <!-- Campos para perfil de alumno -->
+          <div id="campos-alumno" class="campos-perfil">
+            <div class="form-group">
+              <label for="nivel">Nivel:</label>
+              <select id="nivel" name="nivel">
+                <option value="primaria">Primaria</option>
+                <option value="secundaria_basica">Secundaria Básica</option>
+                <option value="secundaria_tecnica">Secundaria Técnica</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="grado">Grado:</label>
+              <select id="grado" name="grado"></select>
+            </div>
+            
+            <div class="form-group">
+              <label for="grupo">Grupo:</label>
+              <input type="text" id="grupo" name="grupo">
+            </div>
+            
+            <div class="form-group">
+              <label for="turno">Turno:</label>
+              <select id="turno" name="turno">
+                <option value="matutino">Matutino</option>
+                <option value="vespertino">Vespertino</option>
+                <option value="tiempo_completo">Tiempo Completo</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="matricula">Matrícula:</label>
+              <input type="text" id="matricula" name="matricula">
+            </div>
+          </div>
+          
+          <!-- Campos para perfil de docente -->
+          <div id="campos-docente" class="campos-perfil hidden">
+            <div class="form-group">
+              <label for="departamento">Departamento:</label>
+              <select id="departamento" name="departamento">
+                <option value="matematicas">Matemáticas</option>
+                <option value="lengua">Lengua y Literatura</option>
+                <option value="ciencias">Ciencias Naturales</option>
+                <option value="sociales">Ciencias Sociales</option>
+                <option value="arte">Arte y Música</option>
+                <option value="educacion_fisica">Educación Física</option>
+                <option value="tecnologia">Tecnología</option>
+                <option value="idiomas">Idiomas Extranjeros</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="codigo_empleado">Código de Empleado:</label>
+              <input type="text" id="codigo_empleado" name="codigo_empleado">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-usuario" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-guardar-usuario" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
   </div>
   
-  <footer><!-- Pie de página --></footer>
+  <div id="modal-importar" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Importar Usuarios</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Sube un archivo CSV con los datos de los usuarios a importar.</p>
+        <form id="form-importar" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="archivo-usuarios">Seleccionar archivo:</label>
+            <input type="file" id="archivo-usuarios" name="archivo" accept=".csv" required>
+          </div>
+          <div class="form-group">
+            <label for="tipo-importacion">Tipo de importación:</label>
+            <select id="tipo-importacion" name="tipo">
+              <option value="alumnos">Alumnos</option>
+              <option value="docentes">Docentes</option>
+              <option value="personal">Personal</option>
+            </select>
+          </div>
+        </form>
+        <a href="/template/usuarios_template.csv" download class="btn btn-link"><i class="fas fa-download"></i> Descargar plantilla</a>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-importar" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-confirmar-importar" class="btn btn-primary">Importar</button>
+      </div>
+    </div>
+  </div>
   
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
+  
+  <script src="/js/auth.js"></script>
   <script src="/js/perfiles.js"></script>
 </body>
 </html>

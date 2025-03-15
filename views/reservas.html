@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de reservas.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +6,37 @@
   <title>Gestión de Reservas - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/reservas.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html" class="active">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Gestión de Reservas</h2>
@@ -49,10 +76,32 @@
   
   <div id="modal-detalles" class="modal hidden">
     <!-- Modal para ver detalles de reserva -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalles de la Reserva</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="reserva-detalles">
+          <!-- Detalles se cargan dinámicamente -->
+        </div>
+        
+        <div class="action-buttons">
+          <button id="btn-marcar-lista" class="btn btn-primary">Marcar como Lista para Recoger</button>
+          <button id="btn-convertir-prestamo" class="btn btn-success">Convertir a Préstamo</button>
+          <button id="btn-cancelar-reserva" class="btn btn-danger">Cancelar Reserva</button>
+        </div>
+      </div>
+    </div>
   </div>
   
-  <footer><!-- Pie de página --></footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/reservas.js"></script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-<!-- views/catalogo.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,16 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogo - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
   <header>
     <div class="container">
       <h1>Biblioteca Escolar</h1>
       <nav>
-        <ul>
+        <ul class="nav-left">
           <li><a href="/">Inicio</a></li>
           <li><a href="/catalogo.html" class="active">Catálogo</a></li>
-         <!-- <li><a href="/importar.html">Importar Libros</a></li> -->
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <!-- Opciones para usuarios no autenticados -->
+          <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+          <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+          
+          <!-- Opciones para usuarios autenticados -->
+          <li class="user-only hidden"><a href="/mis-reservas.html"><i class="fas fa-bookmark"></i> Mis Reservas</a></li>
+          <li class="user-only hidden dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
         </ul>
       </nav>
     </div>
@@ -32,6 +54,7 @@
         <!-- Se llenará dinámicamente -->
       </select>
       <button id="btn-buscar" class="btn">Buscar</button>
+      <a href="/importar.html" class="btn btn-secondary bibliotecario-only hidden"><i class="fas fa-file-import"></i> Importar</a>
     </div>
     
     <div class="libros-grid" id="libros-container">
@@ -50,6 +73,7 @@
     </div>
   </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/catalogo.js"></script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de prestamos.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,16 +6,44 @@
   <title>Gestión de Préstamos - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/prestamos.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html" class="active">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Gestión de Préstamos</h2>
     
     <div class="actions-bar">
-      <button id="btn-nuevo-prestamo" class="btn btn-primary">Nuevo Préstamo</button>
-      <button id="btn-registrar-devolucion" class="btn btn-secondary">Registrar Devolución</button>
+      <button id="btn-nuevo-prestamo" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Préstamo</button>
+      <button id="btn-registrar-devolucion" class="btn btn-secondary"><i class="fas fa-undo"></i> Registrar Devolución</button>
     </div>
     
     <div class="tabs">
@@ -51,14 +78,111 @@
   
   <div id="modal-nuevo-prestamo" class="modal hidden">
     <!-- Modal para nuevo préstamo -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nuevo Préstamo</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-nuevo-prestamo">
+          <div class="form-group">
+            <label for="usuario-id">Usuario:</label>
+            <div class="search-select">
+              <input type="text" id="buscar-usuario-prestamo" placeholder="Buscar usuario por nombre o ID...">
+              <div class="search-results" id="resultados-usuario">
+                <!-- Resultados de búsqueda -->
+              </div>
+            </div>
+            <input type="hidden" id="usuario-id" name="usuario-id" required>
+            <div id="usuario-seleccionado" class="selected-item hidden"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="libro-id">Libro:</label>
+            <div class="search-select">
+              <input type="text" id="buscar-libro-prestamo" placeholder="Buscar libro por título o ISBN...">
+              <div class="search-results" id="resultados-libro">
+                <!-- Resultados de búsqueda -->
+              </div>
+            </div>
+            <input type="hidden" id="libro-id" name="libro-id" required>
+            <div id="libro-seleccionado" class="selected-item hidden"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="ejemplar-id">Ejemplar:</label>
+            <select id="ejemplar-id" name="ejemplar-id" required disabled>
+              <option value="">Selecciona primero un libro</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="fecha-devolucion">Fecha de devolución:</label>
+            <input type="date" id="fecha-devolucion" name="fecha-devolucion" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-prestamo" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-confirmar-prestamo" class="btn btn-primary">Registrar Préstamo</button>
+      </div>
+    </div>
   </div>
   
   <div id="modal-devolucion" class="modal hidden">
     <!-- Modal para registrar devolución -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Registrar Devolución</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-devolucion">
+          <div class="form-group">
+            <label for="codigo-ejemplar">Código del ejemplar:</label>
+            <input type="text" id="codigo-ejemplar" name="codigo-ejemplar" placeholder="Escanea o ingresa el código..." required>
+          </div>
+          
+          <div id="info-prestamo" class="hidden">
+            <div class="prestamo-info">
+              <p><strong>Libro:</strong> <span id="devolucion-libro"></span></p>
+              <p><strong>Usuario:</strong> <span id="devolucion-usuario"></span></p>
+              <p><strong>Fecha préstamo:</strong> <span id="devolucion-fecha-prestamo"></span></p>
+              <p><strong>Fecha devolución:</strong> <span id="devolucion-fecha-devolucion"></span></p>
+              <p><strong>Estado:</strong> <span id="devolucion-estado"></span></p>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="condicion-ejemplar">Condición del ejemplar:</label>
+            <select id="condicion-ejemplar" name="condicion-ejemplar">
+              <option value="Bueno">Bueno</option>
+              <option value="Regular">Regular</option>
+              <option value="Deteriorado">Deteriorado</option>
+              <option value="MuyDeteriorado">Muy Deteriorado</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="notas-devolucion">Notas:</label>
+            <textarea id="notas-devolucion" name="notas-devolucion" rows="3" placeholder="Observaciones sobre el estado del libro..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-devolucion" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-confirmar-devolucion" class="btn btn-primary">Registrar Devolución</button>
+      </div>
+    </div>
   </div>
   
-  <footer><!-- Pie de página --></footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/prestamos.js"></script>
 </body>
 </html>

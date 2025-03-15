@@ -1,4 +1,3 @@
-<!-- views/admin-usuarios.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,11 +13,26 @@
     <div class="container">
       <h1>Biblioteca Escolar</h1>
       <nav>
-        <ul>
+        <ul class="nav-left">
           <li><a href="/">Inicio</a></li>
-          <li><a href="/dashboard.html">Dashboard</a></li>
           <li><a href="/catalogo.html">Catálogo</a></li>
-          <li><a href="/admin-usuarios.html" class="active">Usuarios</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html">Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only"><a href="/admin-usuarios.html" class="active">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
         </ul>
       </nav>
     </div>
@@ -35,8 +49,8 @@
     <div class="tab-content">
       <div id="pendientes" class="tab-pane active">
         <div class="filter-bar">
-          <button id="btn-aprobar-seleccionados" class="btn btn-success">Aprobar Seleccionados</button>
-          <button id="btn-rechazar-seleccionados" class="btn btn-danger">Rechazar Seleccionados</button>
+          <button id="btn-aprobar-seleccionados" class="btn btn-success"><i class="fas fa-check"></i> Aprobar Seleccionados</button>
+          <button id="btn-rechazar-seleccionados" class="btn btn-danger"><i class="fas fa-times"></i> Rechazar Seleccionados</button>
         </div>
         
         <div class="table-responsive">
@@ -77,8 +91,10 @@
             <option value="alumno">Alumnos</option>
             <option value="docente">Docentes</option>
             <option value="personal">Personal</option>
+            <option value="bibliotecario">Bibliotecarios</option>
+            <option value="administrador">Administradores</option>
           </select>
-          <button id="btn-filtrar" class="btn">Filtrar</button>
+          <button id="btn-filtrar" class="btn"><i class="fas fa-search"></i> Filtrar</button>
         </div>
         
         <div class="table-responsive">
@@ -119,11 +135,59 @@
         </div>
         
         <div class="action-buttons">
-          <button id="btn-aprobar-usuario" class="btn btn-success">Aprobar Usuario</button>
-          <button id="btn-activar-usuario" class="btn btn-primary">Activar Usuario</button>
-          <button id="btn-desactivar-usuario" class="btn btn-warning">Desactivar Usuario</button>
-          <button id="btn-suspender-usuario" class="btn btn-danger">Suspender Usuario</button>
+          <button id="btn-aprobar-usuario" class="btn btn-success"><i class="fas fa-check"></i> Aprobar Usuario</button>
+          <button id="btn-activar-usuario" class="btn btn-primary"><i class="fas fa-user-check"></i> Activar Usuario</button>
+          <button id="btn-desactivar-usuario" class="btn btn-warning"><i class="fas fa-user-times"></i> Desactivar Usuario</button>
+          <button id="btn-suspender-usuario" class="btn btn-danger"><i class="fas fa-ban"></i> Suspender Usuario</button>
+          <button id="btn-editar-roles" class="btn btn-info"><i class="fas fa-user-tag"></i> Editar Roles</button>
         </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para editar roles -->
+  <div id="roles-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Roles</h3>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p>Usuario: <strong id="roles-usuario-nombre"></strong></p>
+        
+        <div class="roles-list">
+          <div class="role-item">
+            <input type="checkbox" id="rol-alumno" name="roles" value="alumno">
+            <label for="rol-alumno">Alumno</label>
+          </div>
+          <div class="role-item">
+            <input type="checkbox" id="rol-docente" name="roles" value="docente">
+            <label for="rol-docente">Docente</label>
+          </div>
+          <div class="role-item">
+            <input type="checkbox" id="rol-bibliotecario" name="roles" value="bibliotecario">
+            <label for="rol-bibliotecario">Bibliotecario</label>
+          </div>
+          <div class="role-item">
+            <input type="checkbox" id="rol-administrador" name="roles" value="administrador">
+            <label for="rol-administrador">Administrador</label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="tipo-principal">Tipo principal:</label>
+          <select id="tipo-principal" name="tipo-principal">
+            <option value="alumno">Alumno</option>
+            <option value="docente">Docente</option>
+            <option value="personal">Personal</option>
+            <option value="bibliotecario">Bibliotecario</option>
+            <option value="administrador">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-cancelar-roles" class="btn btn-secondary">Cancelar</button>
+        <button id="btn-guardar-roles" class="btn btn-primary">Guardar Cambios</button>
       </div>
     </div>
   </div>
@@ -134,4 +198,7 @@
     </div>
   </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/admin-usuarios.js"></script>
+</body>
+</html>

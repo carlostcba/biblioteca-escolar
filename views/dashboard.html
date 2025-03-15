@@ -1,4 +1,3 @@
-<!-- Ejemplo simplificado de dashboard.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +6,37 @@
   <title>Dashboard - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <header><!-- Navegación --></header>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html">Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html">Reservas</a></li>
+          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="user-only dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
   
   <main class="container">
     <h2>Dashboard</h2>
@@ -53,27 +80,40 @@
     </div>
     
     <div class="quick-actions">
-      <a href="/prestamos/nuevo" class="action-card">
-        <div class="action-icon">📚</div>
-        <div class="action-title">Nuevo Préstamo</div>
+      <a href="/prestamos.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
+        <div class="action-title">Gestionar Préstamos</div>
       </a>
-      <a href="/devoluciones" class="action-card">
-        <div class="action-icon">📋</div>
-        <div class="action-title">Registrar Devolución</div>
-      </a>
-      <a href="/reservas" class="action-card">
-        <div class="action-icon">🔖</div>
+      <a href="/reservas.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-bookmark"></i></div>
         <div class="action-title">Gestionar Reservas</div>
       </a>
-      <a href="/reportes" class="action-card">
-        <div class="action-icon">📊</div>
+      <a href="/importar.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-file-import"></i></div>
+        <div class="action-title">Importar Libros</div>
+      </a>
+      <a href="/reportes.html" class="action-card admin-only hidden">
+        <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
         <div class="action-title">Generar Reportes</div>
+      </a>
+      <a href="/perfiles.html" class="action-card admin-only hidden">
+        <div class="action-icon"><i class="fas fa-users"></i></div>
+        <div class="action-title">Gestionar Perfiles</div>
+      </a>
+      <a href="/admin-usuarios.html" class="action-card admin-only hidden">
+        <div class="action-icon"><i class="fas fa-user-cog"></i></div>
+        <div class="action-title">Administrar Usuarios</div>
       </a>
     </div>
   </main>
   
-  <footer><!-- Pie de página --></footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
   
+  <script src="/js/auth.js"></script>
   <script src="/js/dashboard.js"></script>
 </body>
 </html>

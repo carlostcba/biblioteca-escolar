@@ -30,7 +30,7 @@ def generar_isbn13():
 try:
     # Leer el archivo de inventario
     print("Leyendo archivo de inventario...")
-    inventario = pd.read_csv("Inventario_LSFlorida_15000.csv")
+    inventario = pd.read_csv("LaSalle_Florida_Completo_Consolidado.csv")
     print(f"Se han leído {len(inventario)} registros correctamente.")
 
     # Crear un nuevo DataFrame con las columnas requeridas
