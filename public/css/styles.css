@@ -576,3 +576,81 @@ header nav {
   width: auto;
   padding: 0 10px;
 }
+
+/* Estilos para la barra de progreso */
+.progress-container {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.progress-label {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.progress {
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Estilos para las notificaciones tipo toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  background-color: #333;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  max-width: 300px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success {
+  background-color: #28a745;
+}
+
+.toast-error {
+  background-color: #dc3545;
+}
+
+.toast-warning {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.toast-info {
+  background-color: #17a2b8;
+}
+
+/* Ocultar 'Mis Reservas' para administradores y bibliotecarios */
+body[data-role="administrador"] .student-teacher-only,
+body[data-role="bibliotecario"] .student-teacher-only {
+    display: none !important;
+}

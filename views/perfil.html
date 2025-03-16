@@ -7,6 +7,326 @@
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/perfil.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Mejoras estéticas adicionales */
+    .profile-container {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      margin: 30px auto;
+      overflow: hidden;
+    }
+    
+    .profile-header {
+      background: linear-gradient(135deg, #4a6da7 0%, #345380 100%);
+      color: white;
+      padding: 30px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .profile-avatar {
+      background-color: white;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .profile-avatar i {
+      font-size: 64px;
+      color: #4a6da7;
+    }
+    
+    .profile-info h2 {
+      margin: 0 0 5px;
+      font-size: 28px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .user-type {
+      display: inline-block;
+      background-color: rgba(255,255,255,0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .user-email {
+      margin: 0;
+      opacity: 0.9;
+    }
+    
+    .profile-tabs {
+      display: flex;
+      border-bottom: 1px solid #e1e4e8;
+      margin-bottom: 0;
+      background-color: #f8f9fa;
+    }
+    
+    .profile-tabs .tab {
+      padding: 15px 25px;
+      font-weight: 500;
+      color: #4e5862;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-tabs .tab:hover {
+      background-color: rgba(74, 109, 167, 0.1);
+    }
+    
+    .profile-tabs .tab.active {
+      color: #4a6da7;
+      font-weight: 600;
+    }
+    
+    .profile-tabs .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: #4a6da7;
+    }
+    
+    .profile-content {
+      padding: 30px;
+    }
+    
+    .tab-pane {
+      display: none;
+    }
+    
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #2d3748;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-group input:focus {
+      border-color: #4a6da7;
+      box-shadow: 0 0 0 3px rgba(74, 109, 167, 0.2);
+      outline: none;
+    }
+    
+    .form-group input:disabled,
+    .form-group input[readonly] {
+      background-color: #f8f9fa;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    
+    .form-group small {
+      display: block;
+      margin-top: 6px;
+      font-size: 13px;
+      color: #718096;
+    }
+    
+    .form-actions {
+      margin-top: 30px;
+      text-align: right;
+    }
+    
+    .btn-primary {
+      background-color: #4a6da7;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .btn-primary:hover {
+      background-color: #345380;
+    }
+    
+    .info-especifica {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 25px;
+      border-left: 4px solid #4a6da7;
+    }
+    
+    .info-especifica h4 {
+      margin-top: 0;
+      color: #345380;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    
+    .activity-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .activity-stat {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .activity-stat:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #4a6da7;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      color: #718096;
+      font-size: 14px;
+    }
+    
+    .activity-list {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .activity-empty {
+      padding: 30px;
+      text-align: center;
+      color: #718096;
+      font-style: italic;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      cursor: pointer;
+    }
+    
+    .checkbox-label input {
+      margin-top: 3px;
+      margin-right: 10px;
+      width: auto;
+    }
+    
+    .security-options {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    
+    .security-options h4 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #345380;
+    }
+    
+    .toast-notification {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #48bb78;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast-icon {
+      margin-right: 12px;
+      font-size: 20px;
+    }
+    
+    .toast-message {
+      flex: 1;
+    }
+    
+    .toast-close {
+      cursor: pointer;
+      margin-left: 12px;
+    }
+    
+    /* Adaptaciones para pantallas pequeñas */
+    @media (max-width: 768px) {
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .profile-avatar {
+        margin-right: 0;
+        margin-bottom: 20px;
+      }
+      
+      .profile-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+      
+      .activity-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -14,23 +334,36 @@
       <h1>Biblioteca Escolar</h1>
       <nav>
         <ul class="nav-left">
-          <li><a href="/">Inicio</a></li>
-          <li><a href="/catalogo.html">Catálogo</a></li>
-          <li><a href="/mis-reservas.html">Mis Reservas</a></li>
-          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
-          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
-          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
-          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
-          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
-          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+          <!-- Navegación básica para todos los usuarios -->
+          <li><a href="/" id="nav-inicio">Inicio</a></li>
+          <li><a href="/catalogo.html" id="nav-catalogo">Catálogo</a></li>
+          
+          <!-- Navegación solo para alumnos y docentes (pero no bibliotecarios ni administradores) -->
+          <li class="user-only student-teacher-only hidden"><a href="/mis-reservas.html" id="nav-mis-reservas">Mis Reservas</a></li>
+          
+          <!-- Navegación para bibliotecarios y administradores -->
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html" id="nav-dashboard">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html" id="nav-prestamos">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html" id="nav-reservas">Reservas</a></li>
+          <li class="bibliotecario-only hidden"><a href="/importar.html" id="nav-importar">Importar</a></li>
+          
+          <!-- Navegación exclusiva para administradores -->
+          <li class="admin-only hidden"><a href="/reportes.html" id="nav-reportes">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html" id="nav-perfiles">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html" id="nav-usuarios">Usuarios</a></li>
         </ul>
         <ul class="nav-right">
-          <li class="user-only dropdown">
+          <!-- Opciones para usuarios no autenticados -->
+          <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+          <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+          
+          <!-- Opciones para usuarios autenticados -->
+          <li class="user-only hidden dropdown">
             <a href="#" class="dropdown-toggle" id="user-menu">
               <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
             </a>
             <div class="dropdown-menu">
-              <a href="/perfil.html" class="active"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
               <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
             </div>
           </li>
@@ -182,40 +515,121 @@
               <label class="checkbox-label">
                 <input type="checkbox" id="notificaciones-email" name="notificaciones-email">
                 Recibir notificaciones por correo electrónico
-              </label
-            </label>
-            <small>Recibirás alertas sobre vencimientos, disponibilidad de reservas y novedades.</small>
-          </div>
-          
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="sesion-activa" name="sesion-activa">
-              Mantener sesión iniciada
-            </label>
-            <small>No recomendado para dispositivos compartidos.</small>
+              </label>
+              <small>Recibirás alertas sobre vencimientos, disponibilidad de reservas y novedades.</small>
+            </div>
+            
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="sesion-activa" name="sesion-activa">
+                Mantener sesión iniciada
+              </label>
+              <small>No recomendado para dispositivos compartidos.</small>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 
-<!-- Notificación Toast -->
-<div id="toast-notification" class="toast-notification hidden">
-  <div class="toast-content">
+  <!-- Notificación Toast -->
+  <div id="toast-notification" class="toast-notification">
     <i class="fas fa-check-circle toast-icon"></i>
     <div class="toast-message" id="toast-message">Cambios guardados con éxito</div>
     <i class="fas fa-times toast-close" id="toast-close"></i>
   </div>
-</div>
 
-<footer>
-  <div class="container">
-    <p>Biblioteca Escolar &copy; 2025 - Todos los derechos reservados.</p>
-  </div>
-</footer>
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025 - Todos los derechos reservados.</p>
+    </div>
+  </footer>
 
-<script src="/js/auth.js"></script>
-<script src="/js/perfil.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/perfil.js"></script>
+  <script>
+    // Script para manejar las pestañas
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.tab');
+      const panes = document.querySelectorAll('.tab-pane');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remover clase active de todas las pestañas
+          tabs.forEach(t => t.classList.remove('active'));
+          
+          // Agregar clase active a la pestaña actual
+          this.classList.add('active');
+          
+          // Mostrar el panel correspondiente
+          const tabId = this.getAttribute('data-tab');
+          panes.forEach(pane => {
+            pane.classList.remove('active');
+            if (pane.id === tabId) {
+              pane.classList.add('active');
+            }
+          });
+        });
+      });
+      
+      // Manejar toast notifications
+      const toastClose = document.getElementById('toast-close');
+      if (toastClose) {
+        toastClose.addEventListener('click', function() {
+          document.getElementById('toast-notification').classList.remove('show');
+        });
+      }
+      
+      // Función para mostrar notificaciones
+      window.showToast = function(message, type = 'success') {
+        const toast = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // Establecer mensaje
+        toastMessage.textContent = message;
+        
+        // Establecer tipo (success, error, warning)
+        toast.className = 'toast-notification';
+        toast.classList.add(type);
+        toast.classList.add('show');
+        
+        // Auto ocultar después de 5 segundos
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 5000);
+      }
+      
+      // Simulación de envío de formulario (solo para propósitos de demostración)
+      const formPerfil = document.getElementById('form-perfil');
+      if (formPerfil) {
+        formPerfil.addEventListener('submit', function(e) {
+          e.preventDefault();
+          // Aquí iría la lógica real para guardar los cambios
+          window.showToast('Cambios guardados con éxito');
+        });
+      }
+      
+      const formPassword = document.getElementById('form-password');
+      if (formPassword) {
+        formPassword.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const newPassword = document.getElementById('new-password').value;
+          const confirmPassword = document.getElementById('confirm-password').value;
+          
+          if (newPassword !== confirmPassword) {
+            window.showToast('Las contraseñas no coinciden', 'error');
+            return;
+          }
+          
+          // Aquí iría la lógica real para cambiar la contraseña
+          window.showToast('Contraseña actualizada correctamente');
+          
+          // Limpiar campos
+          this.reset();
+        });
+      }
+    });
+  </script>
 </body>
 </html>

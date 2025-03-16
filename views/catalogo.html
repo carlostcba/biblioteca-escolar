@@ -13,14 +13,23 @@
       <h1>Biblioteca Escolar</h1>
       <nav>
         <ul class="nav-left">
-          <li><a href="/">Inicio</a></li>
-          <li><a href="/catalogo.html" class="active">Catálogo</a></li>
-          <li class="bibliotecario-only hidden"><a href="/dashboard.html">Dashboard</a></li>
-          <li class="bibliotecario-only hidden"><a href="/prestamos.html">Préstamos</a></li>
-          <li class="bibliotecario-only hidden"><a href="/reservas.html">Reservas</a></li>
-          <li class="admin-only hidden"><a href="/reportes.html">Reportes</a></li>
-          <li class="admin-only hidden"><a href="/perfiles.html">Perfiles</a></li>
-          <li class="admin-only hidden"><a href="/admin-usuarios.html">Usuarios</a></li>
+          <!-- Navegación básica para todos los usuarios -->
+          <li><a href="/" id="nav-inicio">Inicio</a></li>
+          <li><a href="/catalogo.html" id="nav-catalogo">Catálogo</a></li>
+          
+          <!-- Navegación solo para alumnos y docentes (pero no bibliotecarios ni administradores) -->
+          <li class="user-only student-teacher-only hidden"><a href="/mis-reservas.html" id="nav-mis-reservas">Mis Reservas</a></li>
+          
+          <!-- Navegación para bibliotecarios y administradores -->
+          <li class="bibliotecario-only hidden"><a href="/dashboard.html" id="nav-dashboard">Dashboard</a></li>
+          <li class="bibliotecario-only hidden"><a href="/prestamos.html" id="nav-prestamos">Préstamos</a></li>
+          <li class="bibliotecario-only hidden"><a href="/reservas.html" id="nav-reservas">Reservas</a></li>
+          <li class="bibliotecario-only hidden"><a href="/importar.html" id="nav-importar">Importar</a></li>
+          
+          <!-- Navegación exclusiva para administradores -->
+          <li class="admin-only hidden"><a href="/reportes.html" id="nav-reportes">Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html" id="nav-perfiles">Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html" id="nav-usuarios">Usuarios</a></li>
         </ul>
         <ul class="nav-right">
           <!-- Opciones para usuarios no autenticados -->
@@ -28,7 +37,6 @@
           <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
           
           <!-- Opciones para usuarios autenticados -->
-          <li class="user-only hidden"><a href="/mis-reservas.html"><i class="fas fa-bookmark"></i> Mis Reservas</a></li>
           <li class="user-only hidden dropdown">
             <a href="#" class="dropdown-toggle" id="user-menu">
               <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>

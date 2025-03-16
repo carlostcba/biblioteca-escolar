@@ -218,8 +218,18 @@ exports.signin = async (req, res) => {
       authorities = usuario.roles.map(role => `ROLE_${role.nombre.toUpperCase()}`);
     }
     
+    // Definir la URL de redirección según el tipo de usuario
+    let redirectUrl = '/catalogo.html'; // Página predeterminada para todos los usuarios
+    
+    if (usuario.tipo_usuario === 'administrador') {
+      redirectUrl = '/dashboard.html';
+    } else if (usuario.tipo_usuario === 'bibliotecario') {
+      redirectUrl = '/dashboard.html';
+    }
+    
     res.status(200).send({
       token,
+      redirectUrl,
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre,
@@ -257,14 +267,16 @@ exports.checkAuth = async (req, res) => {
     
     if (!usuario) {
       return res.status(404).send({
-        message: "Usuario no encontrado."
+        message: "Usuario no encontrado.",
+        redirectUrl: '/login.html'
       });
     }
     
     // Verificar si el usuario está activo
     if (usuario.estado !== 'activo') {
       return res.status(403).send({
-        message: "Tu cuenta no está activa."
+        message: "Tu cuenta no está activa.",
+        redirectUrl: '/login.html'
       });
     }
     
@@ -299,7 +311,8 @@ exports.checkAuth = async (req, res) => {
   } catch (error) {
     console.error('Error en checkAuth:', error);
     res.status(500).send({
-      message: error.message || "Error al verificar autenticación."
+      message: error.message || "Error al verificar autenticación.",
+      redirectUrl: '/login.html'
     });
   }
 };

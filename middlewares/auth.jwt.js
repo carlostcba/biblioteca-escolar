@@ -17,7 +17,8 @@ const verifyToken = (req, res, next) => {
   
   if (!token) {
     return res.status(403).send({
-      message: "No se proporcionó un token de autenticación."
+      message: "No se proporcionó un token de autenticación.",
+      redirectUrl: '/login.html'
     });
   }
   
@@ -30,13 +31,15 @@ const verifyToken = (req, res, next) => {
       .then(usuario => {
         if (!usuario) {
           return res.status(404).send({
-            message: "Usuario no encontrado."
+            message: "Usuario no encontrado.",
+            redirectUrl: '/login.html'
           });
         }
         
         if (usuario.estado !== 'activo') {
           return res.status(403).send({
-            message: "Tu cuenta no está activa. Por favor, contacta con el administrador."
+            message: "Tu cuenta no está activa. Por favor, contacta con el administrador.",
+            redirectUrl: '/login.html'
           });
         }
         
@@ -44,12 +47,14 @@ const verifyToken = (req, res, next) => {
       })
       .catch(err => {
         res.status(500).send({
-          message: "Error al verificar el usuario."
+          message: "Error al verificar el usuario.",
+          redirectUrl: '/login.html'
         });
       });
   } catch (error) {
     return res.status(401).send({
-      message: "No autorizado"
+      message: "No autorizado",
+      redirectUrl: '/login.html'
     });
   }
 };
@@ -69,11 +74,13 @@ const isAdmin = async (req, res, next) => {
     }
     
     return res.status(403).send({
-      message: "Se requiere rol de Administrador."
+      message: "Se requiere rol de Administrador.",
+      redirectUrl: '/catalogo.html'
     });
   } catch (error) {
     return res.status(500).send({
-      message: "Error al verificar rol de administrador."
+      message: "Error al verificar rol de administrador.",
+      redirectUrl: '/catalogo.html'
     });
   }
 };
@@ -93,11 +100,13 @@ const isBibliotecario = async (req, res, next) => {
     }
     
     return res.status(403).send({
-      message: "Se requiere rol de Bibliotecario o Administrador."
+      message: "Se requiere rol de Bibliotecario o Administrador.",
+      redirectUrl: '/catalogo.html'
     });
   } catch (error) {
     return res.status(500).send({
-      message: "Error al verificar rol de bibliotecario."
+      message: "Error al verificar rol de bibliotecario.",
+      redirectUrl: '/catalogo.html'
     });
   }
 };
@@ -117,11 +126,13 @@ const isDocente = async (req, res, next) => {
     }
     
     return res.status(403).send({
-      message: "Se requiere rol de Docente, Bibliotecario o Administrador."
+      message: "Se requiere rol de Docente, Bibliotecario o Administrador.",
+      redirectUrl: '/catalogo.html'
     });
   } catch (error) {
     return res.status(500).send({
-      message: "Error al verificar rol de docente."
+      message: "Error al verificar rol de docente.",
+      redirectUrl: '/catalogo.html'
     });
   }
 };
@@ -162,11 +173,13 @@ const hasPermission = (permissionName) => {
       }
       
       return res.status(403).send({
-        message: `No tienes permiso para realizar esta acción (${permissionName}).`
+        message: `No tienes permiso para realizar esta acción (${permissionName}).`,
+        redirectUrl: '/catalogo.html'
       });
     } catch (error) {
       return res.status(500).send({
-        message: "Error al verificar permisos."
+        message: "Error al verificar permisos.",
+        redirectUrl: '/catalogo.html'
       });
     }
   };
