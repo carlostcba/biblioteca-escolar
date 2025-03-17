@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const passwordInput = document.getElementById('password');
   const togglePassword = document.querySelector('.toggle-password');
   const errorMessage = document.getElementById('login-error');
+  const submitBtn = loginForm.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
   
   // Event Listeners
   loginForm.addEventListener('submit', handleLogin);
@@ -49,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
       // Mostrar indicador de carga
-      const submitBtn = loginForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
       
@@ -108,9 +108,16 @@ document.addEventListener('DOMContentLoaded', function() {
       showError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
       
       // Restaurar botón
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalText;
+      resetButton();
     }
+  }
+  
+  /**
+   * Restaura el estado del botón de envío
+   */
+  function resetButton() {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
   }
   
   /**
@@ -120,6 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function showError(message) {
     errorMessage.textContent = message;
     errorMessage.classList.remove('hidden');
+    // También resetear el botón cuando se muestra un error
+    resetButton();
   }
   
   /**

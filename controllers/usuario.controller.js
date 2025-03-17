@@ -237,3 +237,80 @@ exports.listarPendientes = async (req, res) => {
     });
   }
 };
+
+// Obtener roles de un usuario
+exports.obtenerRoles = async (req, res) => {
+  try {
+    const id = req.params.id;
+    
+    const usuario = await Usuario.findByPk(id, {
+      include: [{
+        model: db.Rol,
+        as: 'roles',
+        through: { attributes: [] } // No incluir atributos de la tabla intermedia
+      }]
+    });
+    
+    if (!usuario) {
+      return res.status(404).send({
+        message: `No se encontró el usuario con ID=${id}.`
+      });
+    }
+    
+    res.send({
+      tipo_usuario: usuario.tipo_usuario,
+      roles: usuario.roles
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Error al obtener los roles del usuario"
+    });
+  }
+};
+
+// Actualizar roles de un usuario
+exports.actualizarRoles = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { tipo_usuario, roles } = req.body;
+    
+    const usuario = await Usuario.findByPk(id);
+    
+    if (!usuario) {
+      return res.status(404).send({
+        message: `No se encontró el usuario con ID=${id}.`
+      });
+    }
+    
+    // Actualizar el tipo principal del usuario
+    if (tipo_usuario) {
+      await usuario.update({ tipo_usuario });
+    }
+    
+    // Si se enviaron roles, actualizarlos
+    if (roles && Array.isArray(roles)) {
+      // Primero obtener los IDs de los roles
+      const rolesDb = await db.Rol.findAll({
+        where: {
+          nombre: {
+            [Op.in]: roles
+          }
+        }
+      });
+      
+      // Obtener los IDs
+      const roleIds = rolesDb.map(rol => rol.id);
+      
+      // Establecer los roles (esto reemplaza todos los roles existentes)
+      await usuario.setRoles(roleIds);
+    }
+    
+    res.send({
+      message: "Roles actualizados correctamente"
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Error al actualizar los roles del usuario"
+    });
+  }
+};

@@ -160,51 +160,54 @@
   </div>
   
   <!-- Modal para editar roles -->
-  <div id="roles-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Editar Roles</h3>
-        <span class="close">&times;</span>
+  <!-- Reemplazar el modal de roles actual por este -->
+<div id="roles-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Editar Roles</h3>
+      <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="roles-usuario-info">
+        <p>Usuario: <strong id="roles-usuario-nombre">Biblioteca Lasalle</strong></p>
       </div>
-      <div class="modal-body">
-        <p>Usuario: <strong id="roles-usuario-nombre"></strong></p>
-        
-        <div class="roles-list">
-          <div class="role-item">
-            <input type="checkbox" id="rol-alumno" name="roles" value="alumno">
-            <label for="rol-alumno">Alumno</label>
-          </div>
-          <div class="role-item">
-            <input type="checkbox" id="rol-docente" name="roles" value="docente">
-            <label for="rol-docente">Docente</label>
-          </div>
-          <div class="role-item">
-            <input type="checkbox" id="rol-bibliotecario" name="roles" value="bibliotecario">
-            <label for="rol-bibliotecario">Bibliotecario</label>
-          </div>
-          <div class="role-item">
-            <input type="checkbox" id="rol-administrador" name="roles" value="administrador">
-            <label for="rol-administrador">Administrador</label>
-          </div>
+      
+      <div class="roles-list">
+        <div class="role-item">
+          <input type="checkbox" id="rol-alumno" name="roles" value="alumno">
+          <label for="rol-alumno">Alumno</label>
         </div>
-        
-        <div class="form-group">
-          <label for="tipo-principal">Tipo principal:</label>
-          <select id="tipo-principal" name="tipo-principal">
-            <option value="alumno">Alumno</option>
-            <option value="docente">Docente</option>
-            <option value="personal">Personal</option>
-            <option value="bibliotecario">Bibliotecario</option>
-            <option value="administrador">Administrador</option>
-          </select>
+        <div class="role-item">
+          <input type="checkbox" id="rol-docente" name="roles" value="docente">
+          <label for="rol-docente">Docente</label>
+        </div>
+        <div class="role-item">
+          <input type="checkbox" id="rol-bibliotecario" name="roles" value="bibliotecario">
+          <label for="rol-bibliotecario">Bibliotecario</label>
+        </div>
+        <div class="role-item">
+          <input type="checkbox" id="rol-administrador" name="roles" value="administrador">
+          <label for="rol-administrador">Administrador</label>
         </div>
       </div>
-      <div class="modal-actions">
-        <button id="btn-cancelar-roles" class="btn btn-secondary">Cancelar</button>
-        <button id="btn-guardar-roles" class="btn btn-primary">Guardar Cambios</button>
+      
+      <div class="form-group">
+        <label for="tipo-principal">Tipo principal:</label>
+        <select id="tipo-principal" name="tipo-principal">
+          <option value="alumno">Alumno</option>
+          <option value="docente">Docente</option>
+          <option value="personal">Personal</option>
+          <option value="bibliotecario">Bibliotecario</option>
+          <option value="administrador">Administrador</option>
+        </select>
       </div>
     </div>
+    <div class="modal-actions">
+      <button id="btn-cancelar-roles" class="btn-cancelar">Cancelar</button>
+      <button id="btn-guardar-roles" class="btn-guardar">Guardar Cambios</button>
+    </div>
   </div>
+</div>
   
   <footer>
     <div class="container">

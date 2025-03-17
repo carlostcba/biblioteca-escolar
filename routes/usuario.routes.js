@@ -7,6 +7,9 @@ const { authJwt } = require('../middlewares');
 // Crear un nuevo usuario - Esta ruta normalmente se gestiona a través de auth/registro
 // router.post('/', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.crear);
 
+// Rutas para aprobación y gestión de estados - CORREGIDO: Movido antes de la ruta con parámetro :id
+router.get('/pendientes', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.listarPendientes);
+
 // Obtener todos los usuarios
 router.get('/', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.obtenerTodos);
 
@@ -19,9 +22,12 @@ router.put('/:id', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.act
 // Eliminar un usuario por ID
 router.delete('/:id', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.eliminar);
 
-// Rutas para aprobación y gestión de estados
-router.get('/pendientes', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.listarPendientes);
+// Rutas para aprobación y cambios de estado
 router.put('/:id/aprobar', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.aprobarUsuario);
 router.put('/:id/estado', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.cambiarEstado);
+
+// Rutas para gestión de roles
+router.get('/:id/roles', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.obtenerRoles);
+router.put('/:id/roles', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.actualizarRoles);
 
 module.exports = router;

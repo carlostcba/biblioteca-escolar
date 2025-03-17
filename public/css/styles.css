@@ -654,3 +654,168 @@ body[data-role="administrador"] .student-teacher-only,
 body[data-role="bibliotecario"] .student-teacher-only {
     display: none !important;
 }
+
+/* Estilos del modal completo */
+#roles-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+  /* En lugar de usar flex centrado, usamos padding-top para bajarlo */
+  padding-top: 10%; /* Esto controla cuánto aparece desde la parte superior */
+}
+
+/* Estilos del contenido del modal */
+#roles-modal .modal-content {
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 600px; /* Modal más ancho */
+  max-width: 90%;
+  margin: 0 auto; /* Centrado horizontal */
+  background-color: white;
+}
+
+#roles-modal .modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 15px 20px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#roles-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #343a40;
+}
+
+#roles-modal .modal-body {
+  padding: 20px;
+}
+
+#roles-modal .modal-actions {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Estilos para la sección de roles */
+.roles-usuario-info {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.roles-usuario-info strong {
+  font-size: 1.1rem;
+  color: #343a40;
+}
+
+.roles-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.role-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+.role-item:hover {
+  background-color: #e9ecef;
+}
+
+.role-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.role-item label {
+  cursor: pointer;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Estilo para el tipo principal */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #343a40;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 1rem;
+}
+
+/* Estilos para los botones */
+.btn-cancelar {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-cancelar:hover {
+  background-color: #5a6268;
+}
+
+.btn-guardar {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-guardar:hover {
+  background-color: #0b5ed7;
+}
+
+/* Estilo para el botón de cierre (X) */
+#roles-modal .close {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #6c757d;
+  transition: color 0.2s;
+}
+
+#roles-modal .close:hover {
+  color: #343a40;
+}
