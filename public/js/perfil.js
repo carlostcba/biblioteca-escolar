@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function cargarDatosPerfil() {
         try {
-            const response = await fetch('/api/perfil', {
+            // Cambiado a la ruta correcta
+            const response = await fetch('/api/usuarios/mi-perfil', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -61,16 +62,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
+            console.log("Datos de perfil recibidos:", data); // Para depuración
             
             // Actualizar información básica en la UI
-            perfilNombreCompleto.textContent = `${data.nombre} ${data.apellido}`;
-            perfilTipoUsuario.textContent = primeraLetraMayuscula(data.tipo_usuario);
-            perfilEmail.textContent = data.email;
+            if (perfilNombreCompleto) perfilNombreCompleto.textContent = `${data.nombre} ${data.apellido}`;
+            if (perfilTipoUsuario) perfilTipoUsuario.textContent = primeraLetraMayuscula(data.tipo_usuario);
+            if (perfilEmail) perfilEmail.textContent = data.email;
             
             // Llenar formulario de información personal
-            nombreInput.value = data.nombre;
-            apellidoInput.value = data.apellido;
-            emailInput.value = data.email;
+            if (nombreInput) nombreInput.value = data.nombre;
+            if (apellidoInput) apellidoInput.value = data.apellido;
+            if (emailInput) emailInput.value = data.email;
+            
+            // Actualizar nombre en el menú de usuario
+            const userName = document.getElementById('user-name');
+            if (userName) {
+                userName.textContent = `${data.nombre} ${data.apellido}`;
+            }
             
             // Mostrar información específica según tipo de usuario
             mostrarInfoEspecifica(data);
@@ -78,11 +86,38 @@ document.addEventListener('DOMContentLoaded', function() {
             // Cargar datos de actividad si están disponibles
             if (data.actividad) {
                 actualizarEstadisticasActividad(data.actividad);
+            } else {
+                // Cargar historial de actividad por separado si no viene incluido
+                cargarHistorialActividad();
             }
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error al cargar perfil:', error);
             mostrarNotificacion('Error al cargar datos del perfil', 'error');
+        }
+    }
+    
+    /**
+     * Carga el historial de actividad del usuario
+     */
+    async function cargarHistorialActividad() {
+        try {
+            const response = await fetch('/api/usuarios/actividad', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al cargar historial de actividad');
+            }
+            
+            const actividad = await response.json();
+            actualizarEstadisticasActividad(actividad);
+            
+        } catch (error) {
+            console.error('Error al cargar actividad:', error);
+            // No mostramos notificación para no sobrecargar al usuario con mensajes de error
         }
     }
     
@@ -91,46 +126,68 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {Object} data - Datos del perfil
      */
     function mostrarInfoEspecifica(data) {
-        // Ocultar todos los contenedores
+        // Ocultar todos los contenedores de información específica
         if (infoAlumno) infoAlumno.classList.add('hidden');
         if (infoDocente) infoDocente.classList.add('hidden');
+        
+        // Verificar si existe información de perfil
+        if (!data.perfil) {
+            console.warn('No se encontró información de perfil escolar');
+            return;
+        }
+        
+        console.log("Mostrando información específica para:", data.tipo_usuario);
+        console.log("Datos de perfil:", data.perfil);
         
         // Mostrar contenedor según tipo de usuario
         if (data.tipo_usuario === 'alumno' && infoAlumno) {
             infoAlumno.classList.remove('hidden');
             
             // Llenar campos de alumno
-            if (data.perfil) {
-                const nivelInput = document.getElementById('nivel');
-                const gradoGrupoInput = document.getElementById('grado-grupo');
-                const turnoInput = document.getElementById('turno');
-                
-                if (nivelInput) {
-                    nivelInput.value = formatearNivel(data.perfil.nivel_educativo);
-                }
-                
-                if (gradoGrupoInput) {
-                    gradoGrupoInput.value = `${data.perfil.grado}° ${data.perfil.grupo || ''}`.trim();
-                }
-                
-                if (turnoInput) {
-                    turnoInput.value = formatearTurno(data.perfil.turno);
-                }
+            const nivelInput = document.getElementById('nivel');
+            const gradoGrupoInput = document.getElementById('grado-grupo');
+            const turnoInput = document.getElementById('turno');
+            const matriculaInput = document.getElementById('matricula');
+            
+            if (nivelInput) {
+                nivelInput.value = formatearNivel(data.perfil.nivel_educativo);
             }
+            
+            if (gradoGrupoInput) {
+                const grupo = data.perfil.grupo || '';
+                gradoGrupoInput.value = `${data.perfil.grado || ''}° ${grupo}`.trim();
+            }
+            
+            if (turnoInput) {
+                turnoInput.value = formatearTurno(data.perfil.turno);
+            }
+            
+            if (matriculaInput && data.perfil.matricula) {
+                matriculaInput.value = data.perfil.matricula;
+            }
+            
         } else if (data.tipo_usuario === 'docente' && infoDocente) {
             infoDocente.classList.remove('hidden');
             
             // Llenar campos de docente
-            if (data.perfil) {
-                const departamentoInput = document.getElementById('departamento');
-                const codigoEmpleadoInput = document.getElementById('codigo-empleado');
-                
-                if (departamentoInput) {
-                    departamentoInput.value = data.perfil.departamento || '';
-                }
-                
-                if (codigoEmpleadoInput) {
-                    codigoEmpleadoInput.value = data.perfil.codigo_empleado || '';
+            const departamentoInput = document.getElementById('departamento');
+            const codigoEmpleadoInput = document.getElementById('codigo-empleado');
+            const asignaturasInput = document.getElementById('asignaturas');
+            
+            if (departamentoInput && data.perfil.departamento) {
+                departamentoInput.value = formatearDepartamento(data.perfil.departamento);
+            }
+            
+            if (codigoEmpleadoInput && data.perfil.codigo_empleado) {
+                codigoEmpleadoInput.value = data.perfil.codigo_empleado;
+            }
+            
+            if (asignaturasInput && data.perfil.asignaturas) {
+                // Si asignaturas es un array, lo unimos con comas
+                if (Array.isArray(data.perfil.asignaturas)) {
+                    asignaturasInput.value = data.perfil.asignaturas.join(', ');
+                } else {
+                    asignaturasInput.value = data.perfil.asignaturas;
                 }
             }
         }
@@ -156,40 +213,71 @@ document.addEventListener('DOMContentLoaded', function() {
             actividadReciente.innerHTML = '';
             
             actividad.reciente.forEach(item => {
-                const div = document.createElement('div');
-                div.classList.add('activity-item');
-                
-                let icono = 'info-circle';
-                switch (item.tipo) {
-                    case 'prestamo':
-                        icono = 'book';
-                        break;
-                    case 'devolucion':
-                        icono = 'undo';
-                        break;
-                    case 'reserva':
-                        icono = 'bookmark';
-                        break;
-                }
-                
-                const fecha = new Date(item.fecha).toLocaleDateString();
-                
-                div.innerHTML = `
-                    <div class="activity-icon">
-                        <i class="fas fa-${icono}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">${item.titulo}</div>
-                        <div class="activity-description">${item.descripcion}</div>
-                        <div class="activity-date">${fecha}</div>
-                    </div>
-                `;
-                
-                actividadReciente.appendChild(div);
+                const elementoActividad = crearElementoActividad(item);
+                actividadReciente.appendChild(elementoActividad);
             });
         } else if (actividadReciente) {
             actividadReciente.innerHTML = '<div class="activity-empty">No hay actividad reciente para mostrar.</div>';
         }
+    }
+    
+    /**
+     * Crea un elemento de actividad para la lista de actividad reciente
+     * @param {Object} item - Datos de la actividad
+     * @returns {HTMLElement} - Elemento DOM con la actividad formateada
+     */
+    function crearElementoActividad(item) {
+        const div = document.createElement('div');
+        div.classList.add('activity-item');
+        
+        // Determinar ícono según tipo de actividad
+        let icono = 'info-circle';
+        let colorIcono = '';
+        
+        switch (item.tipo) {
+            case 'prestamo':
+                icono = 'book';
+                colorIcono = 'text-blue';
+                break;
+            case 'devolucion':
+                icono = 'undo';
+                colorIcono = 'text-green';
+                break;
+            case 'reserva':
+                icono = 'bookmark';
+                colorIcono = 'text-orange';
+                break;
+            case 'renovacion':
+                icono = 'sync';
+                colorIcono = 'text-purple';
+                break;
+            case 'vencimiento':
+                icono = 'exclamation-circle';
+                colorIcono = 'text-red';
+                break;
+        }
+        
+        // Formatear fecha
+        const fecha = new Date(item.fecha);
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+        
+        // Crear estructura HTML del elemento
+        div.innerHTML = `
+            <div class="activity-icon ${colorIcono}">
+                <i class="fas fa-${icono}"></i>
+            </div>
+            <div class="activity-content">
+                <div class="activity-title">${item.titulo}</div>
+                <div class="activity-description">${item.descripcion}</div>
+                <div class="activity-date">${fechaFormateada}</div>
+            </div>
+        `;
+        
+        return div;
     }
     
     /**
@@ -213,8 +301,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             
-            // Enviar datos al servidor
-            const response = await fetch('/api/perfil', {
+            // Cambiar la ruta para actualizar perfil
+            const response = await fetch('/api/usuarios/mi-perfil', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -235,7 +323,9 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('user_info', JSON.stringify(userData));
             
             // Actualizar interfaz
-            perfilNombreCompleto.textContent = `${perfilData.nombre} ${perfilData.apellido}`;
+            if (perfilNombreCompleto) {
+                perfilNombreCompleto.textContent = `${perfilData.nombre} ${perfilData.apellido}`;
+            }
             
             // Actualizar nombre en el menú de usuario
             const userName = document.getElementById('user-name');
@@ -301,8 +391,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cambiando...';
             
-            // Enviar datos al servidor
-            const response = await fetch('/api/perfil/password', {
+            // Cambiar la ruta para actualizar contraseña
+            const response = await fetch('/api/usuarios/cambiar-password', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -363,18 +453,15 @@ document.addEventListener('DOMContentLoaded', function() {
      * @returns {string} - Nivel formateado
      */
     function formatearNivel(nivel) {
-        if (!nivel) return '';
+        if (!nivel) return 'No especificado';
         
-        switch (nivel) {
-            case 'primaria':
-                return 'Primaria';
-            case 'secundaria_basica':
-                return 'Secundaria Básica';
-            case 'secundaria_tecnica':
-                return 'Secundaria Técnica';
-            default:
-                return nivel;
-        }
+        const niveles = {
+            'primaria': 'Primaria',
+            'secundaria_basica': 'Secundaria Básica',
+            'secundaria_tecnica': 'Secundaria Técnica'
+        };
+        
+        return niveles[nivel] || nivel;
     }
     
     /**
@@ -383,18 +470,37 @@ document.addEventListener('DOMContentLoaded', function() {
      * @returns {string} - Turno formateado
      */
     function formatearTurno(turno) {
-        if (!turno) return '';
+        if (!turno) return 'No especificado';
         
-        switch (turno) {
-            case 'matutino':
-                return 'Matutino';
-            case 'vespertino':
-                return 'Vespertino';
-            case 'tiempo_completo':
-                return 'Tiempo Completo';
-            default:
-                return turno;
-        }
+        const turnos = {
+            'matutino': 'Matutino',
+            'vespertino': 'Vespertino',
+            'tiempo_completo': 'Tiempo Completo'
+        };
+        
+        return turnos[turno] || turno;
+    }
+    
+    /**
+     * Formatea el departamento para mostrar
+     * @param {string} departamento - Departamento
+     * @returns {string} - Departamento formateado
+     */
+    function formatearDepartamento(departamento) {
+        if (!departamento) return 'No especificado';
+        
+        const departamentos = {
+            'matematicas': 'Matemáticas',
+            'lengua': 'Lengua y Literatura',
+            'ciencias': 'Ciencias Naturales',
+            'sociales': 'Ciencias Sociales',
+            'arte': 'Arte y Música',
+            'educacion_fisica': 'Educación Física',
+            'tecnologia': 'Tecnología',
+            'idiomas': 'Idiomas Extranjeros'
+        };
+        
+        return departamentos[departamento] || departamento;
     }
     
     /**
@@ -413,49 +519,38 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {string} tipo - Tipo de notificación (success, error, warning)
      */
     function mostrarNotificacion(mensaje, tipo = 'success') {
-        const toast = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const toastIcon = document.querySelector('.toast-icon');
+        const notification = document.createElement('div');
+        notification.className = `notification ${tipo}`;
+        notification.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
+            </div>
+            <div class="notification-message">${mensaje}</div>
+            <button class="notification-close">&times;</button>
+        `;
         
-        // Establecer mensaje
-        toastMessage.textContent = mensaje;
+        document.body.appendChild(notification);
         
-        // Configurar icono según tipo
-        if (toastIcon) {
-            toastIcon.className = 'toast-icon fas';
-            
-            switch (tipo) {
-                case 'success':
-                    toastIcon.classList.add('fa-check-circle');
-                    break;
-                case 'error':
-                    toastIcon.classList.add('fa-exclamation-circle');
-                    break;
-                case 'warning':
-                    toastIcon.classList.add('fa-exclamation-triangle');
-                    break;
-                default:
-                    toastIcon.classList.add('fa-info-circle');
-            }
-        }
-        
-        // Mostrar toast
-        toast.classList.remove('hidden');
-        toast.classList.add('toast-' + tipo);
-        
-        // Ocultar automáticamente después de 3 segundos
+        // Mostrar con animación
         setTimeout(() => {
-            toast.classList.add('hidden');
-            toast.classList.remove('toast-' + tipo);
+            notification.classList.add('visible');
+        }, 10);
+        
+        // Auto-cerrar después de 3 segundos
+        setTimeout(() => {
+            cerrarNotificacion(notification);
         }, 3000);
         
-        // Configurar evento para cerrar manualmente
-        const toastClose = document.getElementById('toast-close');
-        if (toastClose) {
-            toastClose.addEventListener('click', () => {
-                toast.classList.add('hidden');
-                toast.classList.remove('toast-' + tipo);
-            });
+        // Cerrar al hacer clic
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            cerrarNotificacion(notification);
+        });
+        
+        function cerrarNotificacion(el) {
+            el.classList.remove('visible');
+            setTimeout(() => {
+                el.remove();
+            }, 300);
         }
     }
 });

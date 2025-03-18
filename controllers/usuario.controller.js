@@ -93,6 +93,47 @@ exports.obtenerPorId = async (req, res) => {
   }
 };
 
+// Obtener el perfil del usuario autenticado
+exports.obtenerMiPerfil = async (req, res) => {
+  try {
+    const userId = req.userId; // Este valor viene del middleware de autenticación
+    
+    if (!userId) {
+      return res.status(401).send({
+        message: "No autenticado. Por favor inicie sesión."
+      });
+    }
+    
+    const usuario = await Usuario.findByPk(userId, {
+      include: [{
+        model: PerfilEscolar,
+        as: 'perfil'
+      }]
+    });
+    
+    if (!usuario) {
+      return res.status(404).send({
+        message: "Usuario no encontrado."
+      });
+    }
+    
+    res.status(200).send({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      email: usuario.email,
+      tipo_usuario: usuario.tipo_usuario,
+      perfil: usuario.perfil || null
+    });
+    
+  } catch (error) {
+    console.error("Error al obtener perfil:", error);
+    res.status(500).send({
+      message: "Error al cargar datos del perfil"
+    });
+  }
+};
+
 // Aprobar un usuario
 exports.aprobarUsuario = async (req, res) => {
   try {

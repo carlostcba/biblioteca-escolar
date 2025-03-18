@@ -46,14 +46,16 @@ const verifyToken = (req, res, next) => {
         next();
       })
       .catch(err => {
+        console.error("Error al verificar token:", err);
         res.status(500).send({
           message: "Error al verificar el usuario.",
           redirectUrl: '/login.html'
         });
       });
   } catch (error) {
+    console.error("Error en verificación de token:", error);
     return res.status(401).send({
-      message: "No autorizado",
+      message: "Token inválido o expirado.",
       redirectUrl: '/login.html'
     });
   }
@@ -64,13 +66,27 @@ const verifyToken = (req, res, next) => {
  */
 const isAdmin = async (req, res, next) => {
   try {
-    const usuario = await Usuario.findByPk(req.userId);
-    const roles = await usuario.getRoles();
+    const usuario = await Usuario.findByPk(req.userId, {
+      include: [{
+        model: Rol,
+        as: 'roles',
+        attributes: ['nombre'],
+        through: { attributes: [] }
+      }]
+    });
+
+    if (!usuario) {
+      return res.status(404).send({
+        message: "Usuario no encontrado.",
+        redirectUrl: '/login.html'
+      });
+    }
     
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].nombre === 'administrador') {
-        return next();
-      }
+    // Optimización: verificar directamente si existe el rol de administrador
+    const isUserAdmin = usuario.roles.some(role => role.nombre === 'administrador');
+    
+    if (isUserAdmin) {
+      return next();
     }
     
     return res.status(403).send({
@@ -78,6 +94,7 @@ const isAdmin = async (req, res, next) => {
       redirectUrl: '/catalogo.html'
     });
   } catch (error) {
+    console.error("Error al verificar rol de administrador:", error);
     return res.status(500).send({
       message: "Error al verificar rol de administrador.",
       redirectUrl: '/catalogo.html'
@@ -90,13 +107,29 @@ const isAdmin = async (req, res, next) => {
  */
 const isBibliotecario = async (req, res, next) => {
   try {
-    const usuario = await Usuario.findByPk(req.userId);
-    const roles = await usuario.getRoles();
+    const usuario = await Usuario.findByPk(req.userId, {
+      include: [{
+        model: Rol,
+        as: 'roles',
+        attributes: ['nombre'],
+        through: { attributes: [] }
+      }]
+    });
+
+    if (!usuario) {
+      return res.status(404).send({
+        message: "Usuario no encontrado.",
+        redirectUrl: '/login.html'
+      });
+    }
     
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].nombre === 'bibliotecario' || roles[i].nombre === 'administrador') {
-        return next();
-      }
+    // Optimización: verificar directamente si tiene alguno de los roles requeridos
+    const hasRequiredRole = usuario.roles.some(role => 
+      role.nombre === 'bibliotecario' || role.nombre === 'administrador'
+    );
+    
+    if (hasRequiredRole) {
+      return next();
     }
     
     return res.status(403).send({
@@ -104,6 +137,7 @@ const isBibliotecario = async (req, res, next) => {
       redirectUrl: '/catalogo.html'
     });
   } catch (error) {
+    console.error("Error al verificar rol de bibliotecario:", error);
     return res.status(500).send({
       message: "Error al verificar rol de bibliotecario.",
       redirectUrl: '/catalogo.html'
@@ -116,13 +150,29 @@ const isBibliotecario = async (req, res, next) => {
  */
 const isDocente = async (req, res, next) => {
   try {
-    const usuario = await Usuario.findByPk(req.userId);
-    const roles = await usuario.getRoles();
+    const usuario = await Usuario.findByPk(req.userId, {
+      include: [{
+        model: Rol,
+        as: 'roles',
+        attributes: ['nombre'],
+        through: { attributes: [] }
+      }]
+    });
+
+    if (!usuario) {
+      return res.status(404).send({
+        message: "Usuario no encontrado.",
+        redirectUrl: '/login.html'
+      });
+    }
     
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].nombre === 'docente' || roles[i].nombre === 'bibliotecario' || roles[i].nombre === 'administrador') {
-        return next();
-      }
+    // Optimización: verificar directamente si tiene alguno de los roles requeridos
+    const hasRequiredRole = usuario.roles.some(role => 
+      role.nombre === 'docente' || role.nombre === 'bibliotecario' || role.nombre === 'administrador'
+    );
+    
+    if (hasRequiredRole) {
+      return next();
     }
     
     return res.status(403).send({
@@ -130,6 +180,7 @@ const isDocente = async (req, res, next) => {
       redirectUrl: '/catalogo.html'
     });
   } catch (error) {
+    console.error("Error al verificar rol de docente:", error);
     return res.status(500).send({
       message: "Error al verificar rol de docente.",
       redirectUrl: '/catalogo.html'
@@ -151,22 +202,23 @@ const hasPermission = (permissionName) => {
           include: [{
             model: Permiso,
             as: 'permisos',
+            attributes: ['nombre'],
             through: { attributes: [] }
           }]
         }]
       });
-      
-      // Verificar permisos en todos los roles
-      let hasRequiredPermission = false;
-      for (const rol of usuario.roles) {
-        for (const permiso of rol.permisos) {
-          if (permiso.nombre === permissionName) {
-            hasRequiredPermission = true;
-            break;
-          }
-        }
-        if (hasRequiredPermission) break;
+
+      if (!usuario) {
+        return res.status(404).send({
+          message: "Usuario no encontrado.",
+          redirectUrl: '/login.html'
+        });
       }
+      
+      // Optimización: usar algoritmo más eficiente para verificar permisos
+      const hasRequiredPermission = usuario.roles.some(rol => 
+        rol.permisos.some(permiso => permiso.nombre === permissionName)
+      );
       
       if (hasRequiredPermission) {
         return next();
@@ -177,6 +229,7 @@ const hasPermission = (permissionName) => {
         redirectUrl: '/catalogo.html'
       });
     } catch (error) {
+      console.error("Error al verificar permisos:", error);
       return res.status(500).send({
         message: "Error al verificar permisos.",
         redirectUrl: '/catalogo.html'

@@ -33,7 +33,7 @@ exports.signup = async (req, res) => {
     }
     
     // Verificar si se requiere aprobación (esto podría venir de configuración del sistema)
-    const requiereAprobacion = true; // Por defecto, requerir aprobación
+    const requiereAprobacion = false; // Cambiado a falso para facilitar pruebas (cambia a true en producción)
     
     // Crear usuario en la base de datos
     const usuario = await Usuario.create({
@@ -63,6 +63,12 @@ exports.signup = async (req, res) => {
         departamento: req.body.departamento,
         codigo_empleado: req.body.codigo_empleado,
         asignaturas: req.body.asignaturas ? JSON.stringify(req.body.asignaturas) : null
+      });
+    } else if (req.body.tipo_usuario === 'administrador' || req.body.tipo_usuario === 'bibliotecario') {
+      // También crear un perfil básico para administradores y bibliotecarios
+      await PerfilEscolar.create({
+        usuario_id: usuario.id,
+        tipo_perfil: 'administrativo'
       });
     }
     
@@ -199,13 +205,11 @@ exports.signin = async (req, res) => {
     
     // Cargar información adicional según el tipo de usuario
     let perfilEscolar = null;
-    if (usuario.tipo_usuario === 'alumno' || usuario.tipo_usuario === 'docente') {
-      perfilEscolar = await PerfilEscolar.findOne({
-        where: {
-          usuario_id: usuario.id
-        }
-      });
-    }
+    perfilEscolar = await PerfilEscolar.findOne({
+      where: {
+        usuario_id: usuario.id
+      }
+    });
     
     // Actualizar última conexión
     await usuario.update({
@@ -282,13 +286,11 @@ exports.checkAuth = async (req, res) => {
     
     // Cargar información adicional según el tipo de usuario
     let perfilEscolar = null;
-    if (usuario.tipo_usuario === 'alumno' || usuario.tipo_usuario === 'docente') {
-      perfilEscolar = await PerfilEscolar.findOne({
-        where: {
-          usuario_id: usuario.id
-        }
-      });
-    }
+    perfilEscolar = await PerfilEscolar.findOne({
+      where: {
+        usuario_id: usuario.id
+      }
+    });
     
     // Preparar respuesta
     let authorities = [];

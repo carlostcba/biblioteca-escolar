@@ -10,6 +10,9 @@ const { authJwt } = require('../middlewares');
 // Rutas para aprobación y gestión de estados - CORREGIDO: Movido antes de la ruta con parámetro :id
 router.get('/pendientes', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.listarPendientes);
 
+// Obtener perfil del usuario autenticado
+router.get('/mi-perfil', [authJwt.verifyToken], usuarioController.obtenerMiPerfil);
+
 // Obtener todos los usuarios
 router.get('/', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.obtenerTodos);
 
