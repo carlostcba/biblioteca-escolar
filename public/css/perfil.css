@@ -380,3 +380,31 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* Estilo para el contenedor de los campos de contraseña */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 40px; /* Espacio para el icono */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #718096;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #4a6da7;
+}
+
+#perfil-nombre-completo {
+  color: white;
+}

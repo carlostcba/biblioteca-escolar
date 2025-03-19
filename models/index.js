@@ -1,37 +1,24 @@
 // models/index.js
 const { Sequelize, DataTypes } = require('sequelize');
+const config = require('../config/db.config');
 
-const sequelize = new Sequelize('BibliotecaEscolar', 'sa', 'LaSalle2599', {
-  dialect: 'mssql',
-  host: 'localhost',
-  dialectOptions: {
-    options: {
-      instanceName: 'SQLEXPRESS',
-      encrypt: false,
-      trustServerCertificate: true, // Cambiado a true para desarrollo
-      connectTimeout: 30000,
-      // Añadir para diagnósticos más detallados
-      debug: {
-        packet: true,
-        data: true,
-        payload: true,
-        token: true
-      }
-    }
-  },
-  define: {
-    timestamps: false,
-    freezeTableName: true,
-    sync: { alter: false, force: false }
-  },
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  },
-  logging: console.log // Habilitado para ver todas las consultas SQL
-});
+const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  {
+    dialect: config.dialect,
+    host: config.host,
+    dialectOptions: config.dialectOptions,
+    define: {
+      timestamps: false,
+      freezeTableName: true,
+      sync: { alter: false, force: false }
+    },
+    pool: config.pool,
+    logging: config.logging
+  }
+);
 
 const db = {};
 

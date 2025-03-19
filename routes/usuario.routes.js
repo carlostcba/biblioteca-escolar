@@ -7,11 +7,17 @@ const { authJwt } = require('../middlewares');
 // Crear un nuevo usuario - Esta ruta normalmente se gestiona a través de auth/registro
 // router.post('/', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.crear);
 
-// Rutas para aprobación y gestión de estados - CORREGIDO: Movido antes de la ruta con parámetro :id
+// Rutas para aprobación y gestión de estados - Movido antes de la ruta con parámetro :id
 router.get('/pendientes', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.listarPendientes);
 
 // Obtener perfil del usuario autenticado
 router.get('/mi-perfil', [authJwt.verifyToken], usuarioController.obtenerMiPerfil);
+
+// Actualizar perfil del usuario autenticado
+router.put('/mi-perfil', [authJwt.verifyToken], usuarioController.actualizarMiPerfil);
+
+// Obtener historial de actividad del usuario autenticado
+router.get('/actividad', [authJwt.verifyToken], usuarioController.obtenerActividad);
 
 // Obtener todos los usuarios
 router.get('/', [authJwt.verifyToken, authJwt.isAdmin], usuarioController.obtenerTodos);

@@ -2,16 +2,16 @@
 require('dotenv').config();
 
 module.exports = {
-  dialect: 'mssql',
-  host: 'localhost',
-  username: 'sa',
-  password: 'LaSalle2599',
-  database: 'BibliotecaEscolar',
+  dialect: process.env.DB_DIALECT || 'mssql',
+  host: process.env.DB_HOST || 'localhost',
+  username: process.env.DB_USER || 'sa',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'BibliotecaEscolar',
   dialectOptions: {
     options: {
       encrypt: false,  // No usar cifrado
       trustServerCertificate: false, // No confiar en certificados
-      instanceName: 'SQLEXPRESS',
+      instanceName: process.env.DB_INSTANCE || 'SQLEXPRESS',
       connectTimeout: 60000,
       requestTimeout: 60000
     }
@@ -22,5 +22,5 @@ module.exports = {
     acquire: 30000,
     idle: 10000
   },
-  logging: console.log
+  logging: process.env.NODE_ENV === 'development' ? console.log : false
 };

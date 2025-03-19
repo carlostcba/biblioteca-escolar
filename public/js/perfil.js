@@ -554,3 +554,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Agregar el manejador de eventos para mostrar/ocultar contraseña
+document.querySelectorAll('.toggle-password').forEach(icon => {
+    icon.addEventListener('click', function() {
+      // Obtener el ID del campo de contraseña objetivo
+      const targetId = this.getAttribute('data-target');
+      const passwordInput = document.getElementById(targetId);
+      
+      // Cambiar el tipo del input
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        this.classList.remove('fa-eye');
+        this.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        this.classList.remove('fa-eye-slash');
+        this.classList.add('fa-eye');
+      }
+    });
+  });

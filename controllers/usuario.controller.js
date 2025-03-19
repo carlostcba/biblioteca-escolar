@@ -134,6 +134,75 @@ exports.obtenerMiPerfil = async (req, res) => {
   }
 };
 
+// Actualizar mi perfil (usuario autenticado)
+exports.actualizarMiPerfil = async (req, res) => {
+  try {
+    const userId = req.userId; // Este valor viene del middleware de autenticación
+    
+    if (!userId) {
+      return res.status(401).send({
+        message: "No autenticado. Por favor inicie sesión."
+      });
+    }
+    
+    // Excluir campos sensibles o que no deben modificarse directamente
+    const { password, estado, tipo_usuario, email, aprobado_por, fecha_aprobacion, ...datosActualizables } = req.body;
+    
+    const resultado = await Usuario.update(datosActualizables, {
+      where: { id: userId }
+    });
+    
+    if (resultado[0] === 1) {
+      res.send({
+        message: "Perfil actualizado exitosamente."
+      });
+    } else {
+      res.send({
+        message: `No se pudo actualizar el perfil. Por favor, intente nuevamente.`
+      });
+    }
+  } catch (err) {
+    console.error("Error al actualizar perfil:", err);
+    res.status(500).send({
+      message: "Error al actualizar el perfil: " + err.message
+    });
+  }
+};
+
+// Obtener historial de actividad del usuario
+exports.obtenerActividad = async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    if (!userId) {
+      return res.status(401).send({
+        message: "No autenticado. Por favor inicie sesión."
+      });
+    }
+    
+    // Aquí implementarías la lógica para obtener la actividad
+    // Por ahora, vamos a enviar datos de muestra
+    const actividadMuestra = {
+      totalPrestamos: 0,
+      totalReservas: 0,
+      totalFavoritos: 0,
+      reciente: []
+    };
+    
+    // En una implementación real, consultarías la base de datos
+    // Por ejemplo:
+    // const prestamos = await db.Prestamo.count({ where: { usuario_id: userId } });
+    // actividadMuestra.totalPrestamos = prestamos;
+    
+    res.status(200).send(actividadMuestra);
+  } catch (err) {
+    console.error("Error al obtener actividad:", err);
+    res.status(500).send({
+      message: "Error al cargar el historial de actividad"
+    });
+  }
+};
+
 // Aprobar un usuario
 exports.aprobarUsuario = async (req, res) => {
   try {
@@ -229,7 +298,7 @@ exports.actualizar = async (req, res) => {
     }
   } catch (err) {
     res.status(500).send({
-      message: "Error al actualizar el usuario con ID=" + id
+      message: "Error al actualizar el usuario con ID=" + req.params.id
     });
   }
 };
@@ -254,7 +323,7 @@ exports.eliminar = async (req, res) => {
     }
   } catch (err) {
     res.status(500).send({
-      message: "Error al eliminar el usuario con ID=" + id
+      message: "Error al eliminar el usuario con ID=" + req.params.id
     });
   }
 };
