@@ -91,6 +91,8 @@ exports.crear = async (req, res) => {
 // Reservar un ejemplar específico
 exports.reservarEjemplar = async (req, res) => {
   try {
+    console.log("Datos recibidos:", req.body); // Log para depuración
+    
     // Validar solicitud
     if (!req.body.LibroID || !req.body.EjemplarID) {
       return res.status(400).send({
@@ -98,11 +100,21 @@ exports.reservarEjemplar = async (req, res) => {
       });
     }
 
+    // Asegurar que los IDs sean números enteros
+    const libroID = parseInt(req.body.LibroID);
+    const ejemplarID = parseInt(req.body.EjemplarID);
+    
+    if (isNaN(libroID) || isNaN(ejemplarID)) {
+      return res.status(400).send({
+        message: "El ID del libro y el ID del ejemplar deben ser números válidos"
+      });
+    }
+
     // Verificar que el ejemplar exista y pertenezca al libro
     const ejemplar = await Ejemplar.findOne({
       where: {
-        EjemplarID: req.body.EjemplarID,
-        LibroID: req.body.LibroID,
+        EjemplarID: ejemplarID,
+        LibroID: libroID,
         Estado: 'Disponible'
       }
     });
@@ -116,7 +128,7 @@ exports.reservarEjemplar = async (req, res) => {
     // Verificar si el usuario ya tiene una reserva activa para este libro
     const reservaExistente = await Reserva.findOne({
       where: {
-        LibroID: req.body.LibroID,
+        LibroID: libroID,
         UsuarioID: req.userId,
         Estado: {
           [Op.in]: ['pendiente', 'lista']
@@ -136,9 +148,9 @@ exports.reservarEjemplar = async (req, res) => {
 
     // Crear objeto de reserva con ejemplar específico
     const reserva = {
-      LibroID: req.body.LibroID,
+      LibroID: libroID,
       UsuarioID: req.userId,
-      EjemplarID: req.body.EjemplarID, // Aquí asignamos el ejemplar específico
+      EjemplarID: ejemplarID,
       FechaReserva: new Date(),
       FechaExpiracion: fechaExpiracion,
       Estado: 'pendiente',
@@ -154,7 +166,7 @@ exports.reservarEjemplar = async (req, res) => {
       await Ejemplar.update(
         { Estado: 'Reservado' },
         { 
-          where: { EjemplarID: req.body.EjemplarID },
+          where: { EjemplarID: ejemplarID },
           transaction: t
         }
       );
@@ -173,16 +185,20 @@ exports.reservarEjemplar = async (req, res) => {
           model: Usuario,
           as: 'usuario',
           attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
-        },
-        {
-          model: Ejemplar,
-          as: 'ejemplar'
         }
       ]
     });
 
-    res.status(201).send(reservaCompleta);
+    // Buscar el ejemplar por separado si la asociación no está bien configurada
+    const ejemplarCompleto = await Ejemplar.findByPk(ejemplarID);
+    
+    // Agregar manualmente el ejemplar a la respuesta
+    const respuesta = reservaCompleta.toJSON();
+    respuesta.ejemplar = ejemplarCompleto;
+
+    res.status(201).send(respuesta);
   } catch (err) {
+    console.error("Error en reservarEjemplar:", err);
     res.status(500).send({
       message: err.message || "Ocurrió un error al crear la reserva del ejemplar."
     });
@@ -253,11 +269,6 @@ exports.obtenerTodas = async (req, res) => {
           model: Usuario,
           as: 'usuario',
           attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
-        },
-        {
-          model: Ejemplar,
-          as: 'ejemplar',
-          required: false
         }
       ],
       limit: parseInt(limite),
@@ -265,9 +276,19 @@ exports.obtenerTodas = async (req, res) => {
       order: [['FechaReserva', 'DESC']]
     });
     
+    // Obtener ejemplares asociados por separado
+    const reservas = await Promise.all(rows.map(async (reserva) => {
+      const ejemplar = reserva.EjemplarID ? 
+        await Ejemplar.findByPk(reserva.EjemplarID) : null;
+      
+      const reservaJSON = reserva.toJSON();
+      reservaJSON.ejemplar = ejemplar;
+      return reservaJSON;
+    }));
+    
     res.send({
       totalItems: count,
-      reservas: rows,
+      reservas: reservas,
       totalPaginas: Math.ceil(count / parseInt(limite)),
       paginaActual: parseInt(pagina)
     });
@@ -303,17 +324,22 @@ exports.obtenerMisReservas = async (req, res) => {
         {
           model: Libro,
           as: 'libro'
-        },
-        {
-          model: Ejemplar,
-          as: 'ejemplar',
-          required: false
         }
       ],
       order: [['FechaReserva', 'DESC']]
     });
     
-    res.send(reservas);
+    // Obtener ejemplares asociados por separado
+    const reservasConEjemplares = await Promise.all(reservas.map(async (reserva) => {
+      const ejemplar = reserva.EjemplarID ? 
+        await Ejemplar.findByPk(reserva.EjemplarID) : null;
+      
+      const reservaJSON = reserva.toJSON();
+      reservaJSON.ejemplar = ejemplar;
+      return reservaJSON;
+    }));
+    
+    res.send(reservasConEjemplares);
   } catch (err) {
     res.status(500).send({
       message: err.message || "Ocurrió un error al obtener tus reservas."
@@ -336,11 +362,6 @@ exports.obtenerPorId = async (req, res) => {
           model: Usuario,
           as: 'usuario',
           attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
-        },
-        {
-          model: Ejemplar,
-          as: 'ejemplar',
-          required: false
         }
       ]
     });
@@ -360,7 +381,14 @@ exports.obtenerPorId = async (req, res) => {
       });
     }
     
-    res.send(reserva);
+    // Obtener el ejemplar asociado por separado
+    const ejemplar = reserva.EjemplarID ? 
+      await Ejemplar.findByPk(reserva.EjemplarID) : null;
+    
+    const respuesta = reserva.toJSON();
+    respuesta.ejemplar = ejemplar;
+    
+    res.send(respuesta);
   } catch (err) {
     res.status(500).send({
       message: "Error al obtener la reserva con ID=" + req.params.id
@@ -408,8 +436,7 @@ exports.cambiarEstado = async (req, res) => {
         req.userRole !== 'bibliotecario') {
       
       // Los usuarios solo pueden cancelar sus propias reservas
-      if (req.userId === reserva.UsuarioID && estado === 'cancelada') {
-        // Permitir
+      if (req.userId === reserva.UsuarioID && estado === 'cancelada') {// Permitir
       } else {
         return res.status(403).send({
           message: "No tienes permiso para modificar esta reserva"
@@ -474,16 +501,18 @@ exports.cambiarEstado = async (req, res) => {
           model: Usuario,
           as: 'usuario',
           attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
-        },
-        {
-          model: Ejemplar,
-          as: 'ejemplar',
-          required: false
         }
       ]
     });
     
-    res.send(reservaActualizada);
+    // Obtener el ejemplar asociado por separado
+    const ejemplarActualizado = reservaActualizada.EjemplarID ? 
+      await Ejemplar.findByPk(reservaActualizada.EjemplarID) : null;
+    
+    const respuesta = reservaActualizada.toJSON();
+    respuesta.ejemplar = ejemplarActualizado;
+    
+    res.send(respuesta);
   } catch (err) {
     res.status(500).send({
       message: err.message || "Error al cambiar el estado de la reserva."

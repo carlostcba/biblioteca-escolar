@@ -31,6 +31,7 @@ db.Editorial = require('./editorial.model')(sequelize, DataTypes);
 db.Categoria = require('./categoria.model')(sequelize, DataTypes);
 db.Libro = require('./libro.model')(sequelize, DataTypes);
 db.Ejemplar = require('./ejemplar.model')(sequelize, DataTypes);
+db.Reserva = require('./reserva.model')(sequelize, DataTypes);  // Asegúrate de que este modelo esté importado
 
 // Importar nuevos modelos de autenticación
 db.Usuario = require('./usuario.model')(sequelize, DataTypes);
@@ -91,6 +92,43 @@ db.Ejemplar.belongsTo(db.Libro, {
   as: 'libro'
 });
 
+// Relaciones para el modelo de Reserva
+// Una reserva pertenece a un libro
+db.Reserva.belongsTo(db.Libro, {
+  foreignKey: 'LibroID',
+  as: 'libro'
+});
+
+// Un libro tiene muchas reservas
+db.Libro.hasMany(db.Reserva, {
+  foreignKey: 'LibroID',
+  as: 'reservas'
+});
+
+// Una reserva pertenece a un usuario
+db.Reserva.belongsTo(db.Usuario, {
+  foreignKey: 'UsuarioID',
+  as: 'usuario'
+});
+
+// Un usuario tiene muchas reservas
+db.Usuario.hasMany(db.Reserva, {
+  foreignKey: 'UsuarioID',
+  as: 'reservas'
+});
+
+// Una reserva puede tener un ejemplar asignado
+db.Reserva.belongsTo(db.Ejemplar, {
+  foreignKey: 'EjemplarID',
+  as: 'ejemplar'
+});
+
+// Un ejemplar puede tener varias reservas (aunque normalmente sería una a la vez)
+db.Ejemplar.hasMany(db.Reserva, {
+  foreignKey: 'EjemplarID',
+  as: 'reservas'
+});
+
 // Definir relaciones para los nuevos modelos de autenticación
 // Un usuario tiene un perfil escolar
 db.Usuario.hasOne(db.PerfilEscolar, {
@@ -133,7 +171,5 @@ db.Permiso.belongsToMany(db.Rol, {
   otherKey: 'rol_id',
   as: 'roles'
 });
-
-
 
 module.exports = db;

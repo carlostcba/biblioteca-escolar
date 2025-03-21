@@ -60,9 +60,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Verificar si el libro está cargado
+            if (!libroActual) {
+                console.error('Información del libro no disponible');
+                mostrarNotificacion('No se pudo cargar la información del libro', 'error');
+                return;
+            }
+            
             // Abrir modal de confirmación si hay token
-            modalTituloLibro.textContent = libroActual.Titulo;
-            modalReserva.classList.remove('hidden');
+            if (modalTituloLibro) {
+                modalTituloLibro.textContent = libroActual.Titulo;
+            }
+            if (modalReserva) {
+                modalReserva.classList.remove('hidden');
+            } else {
+                console.error('Modal de reserva no encontrado');
+            }
         });
     }
 
@@ -102,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(event) {
         if (event.target.classList.contains('btn-reservar-ejemplar')) {
             const ejemplarId = event.target.getAttribute('data-id');
+            console.log("Botón de ejemplar clickeado, ID:", ejemplarId); // Depuración
             if (ejemplarId) {
                 reservarEjemplar(ejemplarId);
             }
@@ -195,6 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Determinar si se puede reservar este ejemplar
                     const puedeReservar = ejemplar.Estado === 'Disponible';
+                    
+                    // Log de depuración para verificar IDs
+                    console.log(`Ejemplar ID: ${ejemplar.EjemplarID}, Estado: ${ejemplar.Estado}`);
                     
                     tr.innerHTML = `
                         <td>${ejemplar.CodigoBarras}</td>
@@ -297,6 +314,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para reservar un ejemplar específico
     async function reservarEjemplar(ejemplarId) {
         try {
+            // Añadir logs de depuración
+            console.log("Intentando reservar ejemplar con ID:", ejemplarId);
+            
+            if (!ejemplarId || ejemplarId === '0') {
+                throw new Error('ID de ejemplar inválido');
+            }
+            
             if (!libroActual) {
                 throw new Error('No se ha cargado la información del libro');
             }
@@ -316,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     LibroID: libroActual.LibroID,
-                    EjemplarID: ejemplarId,
+                    EjemplarID: parseInt(ejemplarId), // Asegurarse que sea un número
                     Notas: "Reserva de ejemplar específico"
                 })
             });
@@ -348,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error al reservar ejemplar:', error);
             mostrarNotificacion(error.message, 'error');
         }
     }
