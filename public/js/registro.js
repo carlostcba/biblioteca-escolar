@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Mostrar mensaje de éxito y redireccionar
-        alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.');
+        alert('¡Cuenta creada con éxito! Un administrador revisará tu solicitud. Recibirás una notificación cuando tu cuenta sea aprobada.');
         window.location.href = '/login.html';
         
       } catch (error) {

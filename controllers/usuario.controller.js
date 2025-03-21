@@ -217,9 +217,9 @@ exports.aprobarUsuario = async (req, res) => {
       });
     }
     
-    if (usuario.estado === 'activo') {
+    if (usuario.estado !== 'pendiente') {
       return res.status(400).send({
-        message: "El usuario ya está aprobado"
+        message: `El usuario no está pendiente de aprobación. Estado actual: ${usuario.estado}`
       });
     }
     
@@ -236,6 +236,7 @@ exports.aprobarUsuario = async (req, res) => {
       message: "Usuario aprobado exitosamente"
     });
   } catch (err) {
+    console.error("Error al aprobar usuario:", err);
     res.status(500).send({
       message: err.message || "Error al aprobar el usuario"
     });
@@ -342,6 +343,7 @@ exports.listarPendientes = async (req, res) => {
     
     res.send(usuarios);
   } catch (err) {
+    console.error("Error al obtener usuarios pendientes:", err);
     res.status(500).send({
       message: err.message || "Error al obtener usuarios pendientes"
     });

@@ -25,6 +25,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnVerEjemplares = document.getElementById('btn-ver-ejemplares');
     const tablaEjemplares = document.getElementById('tabla-ejemplares');
     const ejemplaresLista = document.getElementById('ejemplares-lista');
+    
+    // Elementos para la reserva
+    const modalReserva = document.getElementById('modal-reserva');
+    const btnCancelarReserva = document.getElementById('cancelar-reserva');
+    const btnConfirmarReserva = document.getElementById('confirmar-reserva');
+    const modalTituloLibro = document.getElementById('modal-titulo-libro');
+    const cerrarModalX = document.getElementById('cerrar-modal-x');
+
+    // Variables globales
+    let libroActual = null;
 
     // Obtener el ID del libro de la URL
     const params = new URLSearchParams(window.location.search);
@@ -38,29 +48,63 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar los detalles del libro
     cargarDetallesLibro(libroId);
 
-    // Event listeners
-    btnReservar.addEventListener('click', function() {
-        // Verificar si hay ejemplares disponibles
-        if (parseInt(ejemplaresDisponibles.textContent) > 0) {
-            const modal = document.getElementById('modal-reserva');
-            if (modal) {
-                modal.classList.remove('hidden');
-                // Aquí iría más código para configurar el modal
-            } else {
-                alert('Funcionalidad de reserva en desarrollo');
+    // Event listener para el botón de reservar
+    if (btnReservar) {
+        btnReservar.addEventListener('click', function() {
+            console.log('Botón de reservar clickeado'); // Debug
+            
+            // Verificar si hay usuario logueado
+            const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
             }
-        } else {
-            alert('No hay ejemplares disponibles para reservar');
-        }
-    });
+            
+            // Abrir modal de confirmación si hay token
+            modalTituloLibro.textContent = libroActual.Titulo;
+            modalReserva.classList.remove('hidden');
+        });
+    }
 
-    btnVerEjemplares.addEventListener('click', function() {
-        if (tablaEjemplares.classList.contains('hidden')) {
-            tablaEjemplares.classList.remove('hidden');
-            this.textContent = 'Ocultar Ejemplares';
-        } else {
-            tablaEjemplares.classList.add('hidden');
-            this.textContent = 'Ver Ejemplares';
+    if (btnVerEjemplares) {
+        btnVerEjemplares.addEventListener('click', function() {
+            if (tablaEjemplares.classList.contains('hidden')) {
+                tablaEjemplares.classList.remove('hidden');
+                this.textContent = 'Ocultar Ejemplares';
+            } else {
+                tablaEjemplares.classList.add('hidden');
+                this.textContent = 'Ver Ejemplares';
+            }
+        });
+    }
+    
+    // Event listeners para cerrar modal
+    if (cerrarModalX) {
+        cerrarModalX.addEventListener('click', function() {
+            modalReserva.classList.add('hidden');
+        });
+    }
+    
+    if (btnCancelarReserva) {
+        btnCancelarReserva.addEventListener('click', function() {
+            modalReserva.classList.add('hidden');
+        });
+    }
+    
+    // Event listener para confirmar reserva
+    if (btnConfirmarReserva) {
+        btnConfirmarReserva.addEventListener('click', function() {
+            realizarReserva();
+        });
+    }
+
+    // Agregar event listener global para botones de reserva de ejemplares
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('btn-reservar-ejemplar')) {
+            const ejemplarId = event.target.getAttribute('data-id');
+            if (ejemplarId) {
+                reservarEjemplar(ejemplarId);
+            }
         }
     });
 
@@ -74,7 +118,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const libro = await response.json();
-            console.log('Datos del libro:', libro);
+            console.log('Datos del libro cargados:', libro); // Debug
+            
+            // Guardar para uso en la reserva
+            libroActual = libro;
             
             // Actualizar la interfaz con los datos del libro
             document.title = `${libro.Titulo} - Biblioteca Escolar`;
@@ -88,12 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Imagen de portada
             if (libro.ImagenPortada && libro.ImagenPortada.trim() !== '') {
-                 libroImagen.src = libro.ImagenPortada;
-                 libroImagen.alt = libro.Titulo;
+                libroImagen.src = libro.ImagenPortada;
+                libroImagen.alt = libro.Titulo;
             } else {
-          // Usar imagen de portada por defecto
-                 libroImagen.src = '/images/book-placeholder.png';
-                 libroImagen.alt = `Portada no disponible - ${libro.Titulo}`;
+                // Usar imagen de portada por defecto
+                libroImagen.src = '/images/book-placeholder.png';
+                libroImagen.alt = `Portada no disponible - ${libro.Titulo}`;
             }
             
             // Metadatos
@@ -145,26 +192,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 ejemplaresLista.innerHTML = '';
                 libro.ejemplares.forEach(ejemplar => {
                     const tr = document.createElement('tr');
+                    
+                    // Determinar si se puede reservar este ejemplar
+                    const puedeReservar = ejemplar.Estado === 'Disponible';
+                    
                     tr.innerHTML = `
                         <td>${ejemplar.CodigoBarras}</td>
                         <td><span class="status-badge ${ejemplar.Estado === 'Disponible' ? 'status-available' : 'status-borrowed'}">${ejemplar.Estado}</span></td>
+                        <td>${ejemplar.Condicion || '-'}</td>
                         <td>${ejemplar.Signatura || '-'}</td>
                         <td>
-                            ${ejemplar.Estado === 'Disponible' ? 
-                                '<button class="btn btn-sm btn-primary btn-reservar-ejemplar" data-id="' + ejemplar.EjemplarID + '">Reservar</button>' : 
-                                '-'
+                            ${puedeReservar ? 
+                                `<button class="btn btn-sm btn-primary btn-reservar-ejemplar" data-id="${ejemplar.EjemplarID}">Reservar</button>` : 
+                                '<span class="status-text">No disponible</span>'
                             }
                         </td>
                     `;
                     ejemplaresLista.appendChild(tr);
-                });
-                
-                // Agregar event listeners a los botones de reserva
-                document.querySelectorAll('.btn-reservar-ejemplar').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const ejemplarId = this.getAttribute('data-id');
-                        alert(`Funcionalidad de reserva en desarrollo para el ejemplar ${ejemplarId}`);
-                    });
                 });
             }
             
@@ -186,6 +230,163 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             mostrarError('Error al cargar los datos del libro');
         }
+    }
+
+    // Función para realizar la reserva (general)
+    async function realizarReserva() {
+        try {
+            if (!libroActual) {
+                throw new Error('No se ha cargado la información del libro');
+            }
+            
+            const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+            
+            // Deshabilitar botón y mostrar cargando
+            btnConfirmarReserva.disabled = true;
+            btnConfirmarReserva.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            
+            // Enviar solicitud al servidor
+            const response = await fetch('/api/reservas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    LibroID: libroActual.LibroID,
+                    Notas: "Reserva desde página de detalle del libro"
+                })
+            });
+            
+            // Restaurar botón
+            btnConfirmarReserva.disabled = false;
+            btnConfirmarReserva.innerHTML = 'Confirmar Reserva';
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al realizar la reserva');
+            }
+            
+            // Cerrar modal
+            modalReserva.classList.add('hidden');
+            
+            // Mostrar mensaje de éxito
+            mostrarNotificacion('Reserva realizada con éxito. Puedes revisarla en "Mis Reservas".');
+            
+            // Actualizar contador de ejemplares disponibles
+            const nuevaCantidad = parseInt(ejemplaresDisponibles.textContent) - 1;
+            ejemplaresDisponibles.textContent = nuevaCantidad;
+            
+            // Si ya no hay ejemplares disponibles, deshabilitar botón
+            if (nuevaCantidad <= 0) {
+                btnReservar.disabled = true;
+                libroEstado.textContent = 'No disponible';
+                libroEstado.className = 'status-badge status-borrowed';
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(error.message, 'error');
+        }
+    }
+    
+    // Función para reservar un ejemplar específico
+    async function reservarEjemplar(ejemplarId) {
+        try {
+            if (!libroActual) {
+                throw new Error('No se ha cargado la información del libro');
+            }
+            
+            const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+            
+            // Implementación real de la reserva de ejemplar específico
+            const response = await fetch('/api/reservas/ejemplar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    LibroID: libroActual.LibroID,
+                    EjemplarID: ejemplarId,
+                    Notas: "Reserva de ejemplar específico"
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al reservar ejemplar');
+            }
+            
+            // Mostrar mensaje de éxito
+            mostrarNotificacion('Ejemplar reservado con éxito. Puedes revisarlo en "Mis Reservas".');
+            
+            // Actualizar UI
+            const boton = document.querySelector(`.btn-reservar-ejemplar[data-id="${ejemplarId}"]`);
+            if (boton) {
+                boton.disabled = true;
+                boton.textContent = 'Reservado';
+            }
+            
+            // Actualizar contador de ejemplares disponibles
+            const nuevaCantidad = parseInt(ejemplaresDisponibles.textContent) - 1;
+            ejemplaresDisponibles.textContent = nuevaCantidad;
+            
+            // Si ya no hay ejemplares disponibles, deshabilitar botón principal
+            if (nuevaCantidad <= 0) {
+                btnReservar.disabled = true;
+                libroEstado.textContent = 'No disponible';
+                libroEstado.className = 'status-badge status-borrowed';
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion(error.message, 'error');
+        }
+    }
+    
+    // Función para mostrar notificaciones
+    function mostrarNotificacion(mensaje, tipo = 'success') {
+        // Buscar o crear contenedor de notificación
+        let toast = document.getElementById('notification-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'notification-toast';
+            toast.classList.add('notification');
+            document.body.appendChild(toast);
+        }
+        
+        // Crear contenido
+        toast.innerHTML = `
+            <div class="notification-content ${tipo}">
+                <span id="notification-message">${mensaje}</span>
+                <button class="notification-close">&times;</button>
+            </div>
+        `;
+        
+        // Mostrar notificación
+        toast.classList.remove('hidden');
+        
+        // Configurar cierre
+        const closeBtn = toast.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                toast.classList.add('hidden');
+            });
+        }
+        
+        // Auto-cerrar después de 5 segundos
+        setTimeout(function() {
+            toast.classList.add('hidden');
+        }, 5000);
     }
 
     // Función para mostrar errores

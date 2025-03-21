@@ -33,7 +33,7 @@ exports.signup = async (req, res) => {
     }
     
     // Verificar si se requiere aprobación (esto podría venir de configuración del sistema)
-    const requiereAprobacion = false; // Cambiado a falso para facilitar pruebas (cambia a true en producción)
+    const requiereAprobacion = true; // Cambiado a true para requerir aprobación
     
     // Crear usuario en la base de datos
     const usuario = await Usuario.create({

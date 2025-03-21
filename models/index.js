@@ -134,4 +134,6 @@ db.Permiso.belongsToMany(db.Rol, {
   as: 'roles'
 });
 
+
+
 module.exports = db;
