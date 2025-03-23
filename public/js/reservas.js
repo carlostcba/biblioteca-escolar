@@ -127,15 +127,27 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Renderizar reservas
             data.reservas.forEach(reserva => {
-                const fechaReserva = new Date(reserva.fechaReserva).toLocaleDateString();
-                const fechaExpiracion = new Date(reserva.fechaExpiracion).toLocaleDateString();
+                // Adaptación: Asegurarse de que las propiedades existan, independientemente de la nomenclatura
+                // Comprobar si la API usa camelCase o PascalCase para las propiedades
+                const reservaId = reserva.id || reserva.Id || reserva.ReservaID || reserva.reservaID;
+                const fechaReserva = new Date(reserva.fechaReserva || reserva.FechaReserva).toLocaleDateString();
+                const fechaExpiracion = new Date(reserva.fechaExpiracion || reserva.FechaExpiracion).toLocaleDateString();
+                const estado = reserva.estado || reserva.Estado;
+                
+                // Obtener datos del libro y usuario, manejando diferentes estructuras posibles
+                const libro = reserva.libro || reserva.Libro || {};
+                const usuario = reserva.usuario || reserva.Usuario || {};
+                
+                const libroTitulo = libro.titulo || libro.Titulo || 'Sin título';
+                const usuarioNombre = usuario.nombre || usuario.Nombre || 'Usuario';
+                const usuarioApellido = usuario.apellido || usuario.Apellido || '';
                 
                 const reservaElement = document.createElement('div');
                 reservaElement.classList.add('reserva-card');
                 
                 // Determinar clase de estado
                 let estadoClass = '';
-                switch (reserva.estado) {
+                switch (estado && estado.toLowerCase()) {
                     case 'pendiente':
                         estadoClass = 'status-pending';
                         break;
@@ -157,32 +169,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 reservaElement.innerHTML = `
                     <div class="reserva-info">
-                        <h3 class="reserva-titulo">${reserva.libro.titulo}</h3>
-                        <p class="reserva-usuario">Usuario: ${reserva.usuario.nombre} ${reserva.usuario.apellido}</p>
+                        <h3 class="reserva-titulo">${libroTitulo}</h3>
+                        <p class="reserva-usuario">Usuario: ${usuarioNombre} ${usuarioApellido}</p>
                         <p class="reserva-fechas">
                             <span>Reserva: ${fechaReserva}</span>
                             <span>Vence: ${fechaExpiracion}</span>
                         </p>
                         <div class="reserva-estado">
-                            <span class="status-badge ${estadoClass}">${reserva.estado}</span>
+                            <span class="status-badge ${estadoClass}">${estado || 'Desconocido'}</span>
                         </div>
                     </div>
                     <div class="reserva-acciones">
-                        <button class="btn btn-sm btn-secondary btn-detalles" data-id="${reserva.id}">
+                        <button class="btn btn-sm btn-secondary btn-detalles" data-id="${reservaId}">
                             <i class="fas fa-info-circle"></i> Detalles
                         </button>
-                        ${reserva.estado === 'pendiente' ? 
-                            `<button class="btn btn-sm btn-success btn-lista" data-id="${reserva.id}">
+                        ${estado && estado.toLowerCase() === 'pendiente' ? 
+                            `<button class="btn btn-sm btn-success btn-lista" data-id="${reservaId}">
                                 <i class="fas fa-check"></i> Marcar Lista
                             </button>` : ''
                         }
-                        ${reserva.estado === 'lista' ? 
-                            `<button class="btn btn-sm btn-primary btn-completar" data-id="${reserva.id}">
+                        ${estado && estado.toLowerCase() === 'lista' ? 
+                            `<button class="btn btn-sm btn-primary btn-completar" data-id="${reservaId}">
                                 <i class="fas fa-check-circle"></i> Completar
                             </button>` : ''
                         }
-                        ${(reserva.estado === 'pendiente' || reserva.estado === 'lista') ? 
-                            `<button class="btn btn-sm btn-danger btn-cancelar" data-id="${reserva.id}">
+                        ${(estado && (estado.toLowerCase() === 'pendiente' || estado.toLowerCase() === 'lista')) ? 
+                            `<button class="btn btn-sm btn-danger btn-cancelar" data-id="${reservaId}">
                                 <i class="fas fa-times"></i> Cancelar
                             </button>` : ''
                         }
@@ -193,34 +205,50 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Configurar paginación
-            configurarPaginacion(data.totalPaginas, data.paginaActual);
+            configurarPaginacion(data.totalPaginas || 1, data.paginaActual || paginaActual);
             
             // Agregar event listeners a los botones
             document.querySelectorAll('.btn-detalles').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const reservaId = this.getAttribute('data-id');
-                    verDetallesReserva(reservaId);
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        verDetallesReserva(reservaId);
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
                 });
             });
             
             document.querySelectorAll('.btn-lista').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const reservaId = this.getAttribute('data-id');
-                    cambiarEstadoReserva(reservaId, 'lista');
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'lista');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
                 });
             });
             
             document.querySelectorAll('.btn-completar').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const reservaId = this.getAttribute('data-id');
-                    cambiarEstadoReserva(reservaId, 'completada');
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'completada');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
                 });
             });
             
             document.querySelectorAll('.btn-cancelar').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const reservaId = this.getAttribute('data-id');
-                    cambiarEstadoReserva(reservaId, 'cancelada');
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'cancelada');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
                 });
             });
             
@@ -330,6 +358,10 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function cambiarEstadoReserva(reservaId, nuevoEstado) {
         try {
+            if (!reservaId || reservaId === 'undefined' || reservaId === 'null') {
+                throw new Error('ID de reserva no válido');
+            }
+            
             // Mostrar mensaje de confirmación
             if (!confirm(`¿Estás seguro de que deseas cambiar el estado de la reserva a "${nuevoEstado}"?`)) {
                 return;
@@ -368,6 +400,10 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function verDetallesReserva(reservaId) {
         try {
+            if (!reservaId || reservaId === 'undefined' || reservaId === 'null') {
+                throw new Error('ID de reserva no válido');
+            }
+            
             const response = await fetch(`/api/reservas/${reservaId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -380,13 +416,27 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const data = await response.json();
             
+            // Adaptación: Manejar diferentes estructuras de datos
+            const reservaIdModal = data.id || data.Id || data.ReservaID || data.reservaID;
+            const estadoReserva = data.estado || data.Estado;
+            const fechaReserva = new Date(data.fechaReserva || data.FechaReserva).toLocaleDateString();
+            const fechaExpiracion = new Date(data.fechaExpiracion || data.FechaExpiracion).toLocaleDateString();
+            
+            // Obtener datos del libro, usuario y ejemplar
+            const libro = data.libro || data.Libro || {};
+            const usuario = data.usuario || data.Usuario || {};
+            const ejemplar = data.ejemplar || data.Ejemplar;
+            
+            const libroTitulo = libro.titulo || libro.Titulo || 'Sin título';
+            const libroISBN = libro.isbn || libro.ISBN || 'No disponible';
+            const usuarioNombre = usuario.nombre || usuario.Nombre || 'Usuario';
+            const usuarioApellido = usuario.apellido || usuario.Apellido || '';
+            const usuarioTipo = usuario.tipoUsuario || usuario.tipo_usuario || usuario.TipoUsuario || 'No especificado';
+            
             // Crear y mostrar un modal con los detalles
             const modal = document.createElement('div');
             modal.id = 'modal-detalles';
             modal.classList.add('modal');
-            
-            const fechaReserva = new Date(data.fechaReserva).toLocaleDateString();
-            const fechaExpiracion = new Date(data.fechaExpiracion).toLocaleDateString();
             
             modal.innerHTML = `
                 <div class="modal-content">
@@ -396,25 +446,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="modal-body">
                         <div class="detalles-reserva">
-                            <h4>${data.libro.titulo}</h4>
-                            <p><strong>ISBN:</strong> ${data.libro.isbn || 'No disponible'}</p>
-                            <p><strong>Usuario:</strong> ${data.usuario.nombre} ${data.usuario.apellido}</p>
-                            <p><strong>Tipo de usuario:</strong> ${data.usuario.tipoUsuario}</p>
+                            <h4>${libroTitulo}</h4>
+                            <p><strong>ISBN:</strong> ${libroISBN}</p>
+                            <p><strong>Usuario:</strong> ${usuarioNombre} ${usuarioApellido}</p>
+                            <p><strong>Tipo de usuario:</strong> ${usuarioTipo}</p>
                             <p><strong>Fecha de reserva:</strong> ${fechaReserva}</p>
                             <p><strong>Fecha de expiración:</strong> ${fechaExpiracion}</p>
-                            <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(data.estado)}">${data.estado}</span></p>
-                            ${data.ejemplar ? `<p><strong>Ejemplar asignado:</strong> ${data.ejemplar.codigoBarras}</p>` : ''}
-                            ${data.notas ? `<p><strong>Notas:</strong> ${data.notas}</p>` : ''}
+                            <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estadoReserva)}">${estadoReserva}</span></p>
+                            ${ejemplar ? 
+                              `<p><strong>Ejemplar asignado:</strong> ${ejemplar.codigoBarras || ejemplar.CodigoBarras || ejemplar.codigo || ejemplar.Codigo || 'No disponible'}</p>` : 
+                              ''}
+                            ${data.notas || data.Notas ? 
+                              `<p><strong>Notas:</strong> ${data.notas || data.Notas}</p>` : 
+                              ''}
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary modal-close">Cerrar</button>
-                        ${data.estado === 'pendiente' ? 
-                            `<button class="btn btn-success btn-lista-modal" data-id="${data.id}">Marcar Lista</button>` : ''}
-                        ${data.estado === 'lista' ? 
-                            `<button class="btn btn-primary btn-completar-modal" data-id="${data.id}">Completar</button>` : ''}
-                        ${(data.estado === 'pendiente' || data.estado === 'lista') ? 
-                            `<button class="btn btn-danger btn-cancelar-modal" data-id="${data.id}">Cancelar</button>` : ''}
+                        ${estadoReserva && estadoReserva.toLowerCase() === 'pendiente' ? 
+                            `<button class="btn btn-success btn-lista-modal" data-id="${reservaIdModal}">Marcar Lista</button>` : ''}
+                        ${estadoReserva && estadoReserva.toLowerCase() === 'lista' ? 
+                            `<button class="btn btn-primary btn-completar-modal" data-id="${reservaIdModal}">Completar</button>` : ''}
+                        ${estadoReserva && (estadoReserva.toLowerCase() === 'pendiente' || estadoReserva.toLowerCase() === 'lista') ? 
+                            `<button class="btn btn-danger btn-cancelar-modal" data-id="${reservaIdModal}">Cancelar</button>` : ''}
                     </div>
                 </div>
             `;
@@ -444,7 +498,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.classList.remove('show');
                     setTimeout(() => {
                         modal.remove();
-                        cambiarEstadoReserva(reservaId, 'lista');
+                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
+                            cambiarEstadoReserva(reservaIdModal, 'lista');
+                        } else {
+                            mostrarNotificacion('ID de reserva no válido', 'error');
+                        }
                     }, 300);
                 });
             }
@@ -455,7 +513,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.classList.remove('show');
                     setTimeout(() => {
                         modal.remove();
-                        cambiarEstadoReserva(reservaId, 'completada');
+                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
+                            cambiarEstadoReserva(reservaIdModal, 'completada');
+                        } else {
+                            mostrarNotificacion('ID de reserva no válido', 'error');
+                        }
                     }, 300);
                 });
             }
@@ -466,14 +528,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.classList.remove('show');
                     setTimeout(() => {
                         modal.remove();
-                        cambiarEstadoReserva(reservaId, 'cancelada');
+                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
+                            cambiarEstadoReserva(reservaIdModal, 'cancelada');
+                        } else {
+                            mostrarNotificacion('ID de reserva no válido', 'error');
+                        }
                     }, 300);
                 });
             }
             
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion('Error al cargar detalles de la reserva', 'error');
+            mostrarNotificacion('Error al cargar detalles de la reserva: ' + error.message, 'error');
         }
     }
     
@@ -483,7 +549,9 @@ document.addEventListener('DOMContentLoaded', function() {
      * @returns {string} - Clase CSS correspondiente
      */
     function getEstadoClass(estado) {
-        switch (estado) {
+        if (!estado) return '';
+        
+        switch (estado.toLowerCase()) {
             case 'pendiente':
                 return 'status-pending';
             case 'lista':

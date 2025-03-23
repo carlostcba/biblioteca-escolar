@@ -139,59 +139,69 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Actualizar la interfaz con los datos del libro
             document.title = `${libro.Titulo} - Biblioteca Escolar`;
-            libroTitulo.textContent = libro.Titulo;
-            libroTituloCompleto.textContent = libro.Titulo;
+            if (libroTitulo) libroTitulo.textContent = libro.Titulo;
+            if (libroTituloCompleto) libroTituloCompleto.textContent = libro.Titulo;
             
             // Autor
-            if (libro.autor) {
+            if (libroAutor && libro.autor) {
                 libroAutor.textContent = `${libro.autor.Nombre} ${libro.autor.Apellido}`;
             }
             
             // Imagen de portada
-            if (libro.ImagenPortada && libro.ImagenPortada.trim() !== '') {
-                libroImagen.src = libro.ImagenPortada;
-                libroImagen.alt = libro.Titulo;
-            } else {
-                // Usar imagen de portada por defecto
-                libroImagen.src = '/images/book-placeholder.png';
-                libroImagen.alt = `Portada no disponible - ${libro.Titulo}`;
+            if (libroImagen) {
+                if (libro.ImagenPortada && libro.ImagenPortada.trim() !== '') {
+                    libroImagen.src = libro.ImagenPortada;
+                    libroImagen.alt = libro.Titulo;
+                } else {
+                    // Usar imagen de portada por defecto
+                    libroImagen.src = '/images/book-placeholder.png';
+                    libroImagen.alt = `Portada no disponible - ${libro.Titulo}`;
+                }
             }
             
             // Metadatos
-            libroISBN.textContent = libro.ISBN || '-';
+            if (libroISBN) libroISBN.textContent = libro.ISBN || '-';
             
-            if (libro.editorial) {
+            if (libroEditorial && libro.editorial) {
                 libroEditorial.textContent = libro.editorial.Nombre || '-';
             }
             
-            if (libro.FechaPublicacion) {
-                const fecha = new Date(libro.FechaPublicacion);
-                libroAño.textContent = fecha.getFullYear();
-            } else {
-                libroAño.textContent = '-';
+            if (libroAño) {
+                if (libro.FechaPublicacion) {
+                    const fecha = new Date(libro.FechaPublicacion);
+                    libroAño.textContent = fecha.getFullYear();
+                } else {
+                    libroAño.textContent = '-';
+                }
             }
             
-            libroPaginas.textContent = libro.Paginas || '-';
+            if (libroPaginas) libroPaginas.textContent = libro.Paginas || '-';
             
             // Categorías
-            if (libro.categorias && libro.categorias.length > 0) {
-                libroCategorias.textContent = libro.categorias.map(cat => cat.Nombre).join(', ');
-            } else {
-                libroCategorias.textContent = '-';
+            if (libroCategorias) {
+                if (libro.categorias && libro.categorias.length > 0) {
+                    libroCategorias.textContent = libro.categorias.map(cat => cat.Nombre).join(', ');
+                } else {
+                    libroCategorias.textContent = '-';
+                }
             }
             
             // Descripción
-            if (libro.Descripcion) {
-                libroDescripcion.textContent = libro.Descripcion;
-            } else {
-                libroDescripcion.innerHTML = '<p>No hay descripción disponible para este libro.</p>';
+            if (libroDescripcion) {
+                if (libro.Descripcion) {
+                    libroDescripcion.textContent = libro.Descripcion;
+                } else {
+                    libroDescripcion.innerHTML = '<p>No hay descripción disponible para este libro.</p>';
+                }
             }
             
             // Tabla de contenido
-            if (libro.TablaContenido) {
-                libroTablaContenido.textContent = libro.TablaContenido;
-            } else {
-                libroTablaContenido.innerHTML = '<p>No hay tabla de contenido disponible para este libro.</p>';
+            if (libroTablaContenido) {
+                if (libro.TablaContenido) {
+                    libroTablaContenido.textContent = libro.TablaContenido;
+                } else {
+                    libroTablaContenido.innerHTML = '<p>No hay tabla de contenido disponible para este libro.</p>';
+                }
             }
             
             // Ejemplares y disponibilidad
@@ -203,44 +213,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 disponibles = libro.ejemplares.filter(ej => ej.Estado === 'Disponible').length;
                 
                 // Actualizar tabla de ejemplares
-                ejemplaresLista.innerHTML = '';
-                libro.ejemplares.forEach(ejemplar => {
-                    const tr = document.createElement('tr');
-                    
-                    // Determinar si se puede reservar este ejemplar
-                    const puedeReservar = ejemplar.Estado === 'Disponible';
-                    
-                    // Log de depuración para verificar IDs
-                    console.log(`Ejemplar ID: ${ejemplar.EjemplarID}, Estado: ${ejemplar.Estado}`);
-                    
-                    tr.innerHTML = `
-                        <td>${ejemplar.CodigoBarras}</td>
-                        <td><span class="status-badge ${ejemplar.Estado === 'Disponible' ? 'status-available' : 'status-borrowed'}">${ejemplar.Estado}</span></td>
-                        <td>${ejemplar.Condicion || '-'}</td>
-                        <td>${ejemplar.Signatura || '-'}</td>
-                        <td>
-                            ${puedeReservar ? 
-                                `<button class="btn btn-sm btn-primary btn-reservar-ejemplar" data-id="${ejemplar.EjemplarID}">Reservar</button>` : 
-                                '<span class="status-text">No disponible</span>'
-                            }
-                        </td>
-                    `;
-                    ejemplaresLista.appendChild(tr);
-                });
+                if (ejemplaresLista) {
+                    ejemplaresLista.innerHTML = '';
+                    libro.ejemplares.forEach(ejemplar => {
+                        const tr = document.createElement('tr');
+                        
+                        // Determinar si se puede reservar este ejemplar
+                        const puedeReservar = ejemplar.Estado === 'Disponible';
+                        
+                        // Log de depuración para verificar IDs
+                        console.log(`Ejemplar ID: ${ejemplar.EjemplarID}, Estado: ${ejemplar.Estado}`);
+                        
+                        tr.innerHTML = `
+                            <td>${ejemplar.CodigoBarras}</td>
+                            <td><span class="status-badge ${ejemplar.Estado === 'Disponible' ? 'status-available' : 'status-borrowed'}">${ejemplar.Estado}</span></td>
+                            <td>${ejemplar.Condicion || '-'}</td>
+                            <td>${ejemplar.Signatura || '-'}</td>
+                            <td>
+                                ${puedeReservar ? 
+                                    `<button class="btn btn-sm btn-primary btn-reservar-ejemplar" data-id="${ejemplar.EjemplarID}">Reservar</button>` : 
+                                    '<span class="status-text">No disponible</span>'
+                                }
+                            </td>
+                        `;
+                        ejemplaresLista.appendChild(tr);
+                    });
+                }
             }
             
-            ejemplaresDisponibles.textContent = disponibles;
-            ejemplaresTotal.textContent = total;
+            if (ejemplaresDisponibles) ejemplaresDisponibles.textContent = disponibles;
+            if (ejemplaresTotal) ejemplaresTotal.textContent = total;
             
             // Actualizar estado de disponibilidad
-            if (disponibles > 0) {
-                libroEstado.textContent = 'Disponible';
-                libroEstado.className = 'status-badge status-available';
-                btnReservar.disabled = false;
-            } else {
-                libroEstado.textContent = 'No disponible';
-                libroEstado.className = 'status-badge status-borrowed';
-                btnReservar.disabled = true;
+            if (libroEstado && btnReservar) {
+                if (disponibles > 0) {
+                    libroEstado.textContent = 'Disponible';
+                    libroEstado.className = 'status-badge status-available';
+                    btnReservar.disabled = false;
+                } else {
+                    libroEstado.textContent = 'No disponible';
+                    libroEstado.className = 'status-badge status-borrowed';
+                    btnReservar.disabled = true;
+                }
             }
             
         } catch (error) {
@@ -305,6 +319,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 libroEstado.className = 'status-badge status-borrowed';
             }
             
+            // Recargar la página después de un breve retraso
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
         } catch (error) {
             console.error('Error:', error);
             mostrarNotificacion(error.message, 'error');
@@ -331,6 +350,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Desactivar todos los botones de reserva mientras se procesa
+            const botonesReserva = document.querySelectorAll('.btn-reservar-ejemplar');
+            botonesReserva.forEach(btn => {
+                btn.disabled = true;
+                if (btn.getAttribute('data-id') === ejemplarId) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                }
+            });
+            
             // Implementación real de la reserva de ejemplar específico
             const response = await fetch('/api/reservas/ejemplar', {
                 method: 'POST',
@@ -345,9 +373,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
             
+            const responseData = await response.json();
+            
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Error al reservar ejemplar');
+                // Reactivar los botones
+                botonesReserva.forEach(btn => {
+                    btn.disabled = false;
+                    if (btn.getAttribute('data-id') === ejemplarId) {
+                        btn.innerHTML = 'Reservar';
+                    }
+                });
+                
+                throw new Error(responseData.message || 'Error al reservar ejemplar');
             }
             
             // Mostrar mensaje de éxito
@@ -371,9 +408,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 libroEstado.className = 'status-badge status-borrowed';
             }
             
+            // Recargar la página después de un breve retraso
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
         } catch (error) {
             console.error('Error al reservar ejemplar:', error);
-            mostrarNotificacion(error.message, 'error');
+            mostrarNotificacion(`Error: ${error.message}`, 'error');
         }
     }
     
@@ -416,12 +458,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar errores
     function mostrarError(mensaje) {
         const contenedor = document.querySelector('.libro-detalle');
-        contenedor.innerHTML = `
-            <div class="error-message">
-                <h3>Error</h3>
-                <p>${mensaje}</p>
-                <a href="/catalogo.html" class="btn">Volver al catálogo</a>
-            </div>
-        `;
+        if (contenedor) {
+            contenedor.innerHTML = `
+                <div class="error-message">
+                    <h3>Error</h3>
+                    <p>${mensaje}</p>
+                    <a href="/catalogo.html" class="btn">Volver al catálogo</a>
+                </div>
+            `;
+        } else {
+            console.error('Error:', mensaje);
+            alert(`Error: ${mensaje}`);
+        }
     }
 });

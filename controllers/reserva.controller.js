@@ -49,14 +49,15 @@ exports.crear = async (req, res) => {
     }
 
     // Calcular fecha de expiración (48 horas desde ahora)
-    const fechaExpiracion = new Date();
+    const ahora = new Date();
+    const fechaExpiracion = new Date(ahora);
     fechaExpiracion.setHours(fechaExpiracion.getHours() + 48);
 
     // Crear objeto de reserva
     const reserva = {
       LibroID: req.body.LibroID,
       UsuarioID: req.userId,
-      FechaReserva: new Date(),
+      FechaReserva: ahora,
       FechaExpiracion: fechaExpiracion,
       Estado: 'pendiente',
       Notas: req.body.Notas || null
@@ -82,6 +83,7 @@ exports.crear = async (req, res) => {
 
     res.status(201).send(reservaCompleta);
   } catch (err) {
+    console.error("Error en crear reserva:", err);
     res.status(500).send({
       message: err.message || "Ocurrió un error al crear la reserva."
     });
@@ -143,7 +145,8 @@ exports.reservarEjemplar = async (req, res) => {
     }
 
     // Calcular fecha de expiración (48 horas desde ahora)
-    const fechaExpiracion = new Date();
+    const ahora = new Date();
+    const fechaExpiracion = new Date(ahora);
     fechaExpiracion.setHours(fechaExpiracion.getHours() + 48);
 
     // Crear objeto de reserva con ejemplar específico
@@ -151,7 +154,7 @@ exports.reservarEjemplar = async (req, res) => {
       LibroID: libroID,
       UsuarioID: req.userId,
       EjemplarID: ejemplarID,
-      FechaReserva: new Date(),
+      FechaReserva: ahora,
       FechaExpiracion: fechaExpiracion,
       Estado: 'pendiente',
       Notas: req.body.Notas || null
@@ -163,10 +166,11 @@ exports.reservarEjemplar = async (req, res) => {
       const nuevaReserva = await Reserva.create(reserva, { transaction: t });
       
       // Actualizar el estado del ejemplar
-      await Ejemplar.update(
-        { Estado: 'Reservado' },
-        { 
-          where: { EjemplarID: ejemplarID },
+      await db.sequelize.query(
+        "UPDATE Ejemplares SET Estado = 'Reservado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+        {
+          replacements: { ejemplarID },
+          type: db.sequelize.QueryTypes.UPDATE,
           transaction: t
         }
       );
@@ -189,7 +193,7 @@ exports.reservarEjemplar = async (req, res) => {
       ]
     });
 
-    // Buscar el ejemplar por separado si la asociación no está bien configurada
+    // Buscar el ejemplar por separado
     const ejemplarCompleto = await Ejemplar.findByPk(ejemplarID);
     
     // Agregar manualmente el ejemplar a la respuesta
@@ -444,50 +448,51 @@ exports.cambiarEstado = async (req, res) => {
       }
     }
     
-    // Actualizar estado
-    const actualizacion = {
-      Estado: estado
-    };
-    
-    // Si se proporciona un ejemplar, asignarlo
-    if (ejemplarID && (estado === 'lista' || estado === 'completada')) {
-      // Verificar si el ejemplar existe y está disponible
-      const ejemplar = await Ejemplar.findByPk(ejemplarID);
+    // Usar una transacción para asegurar la consistencia
+    await db.sequelize.transaction(async (t) => {
+      // Actualizar estado
+      await db.sequelize.query(
+        "UPDATE Reservas SET Estado = :estado, FechaActualizacion = GETDATE() " + 
+        (notas ? ", Notas = :notas " : "") +
+        (ejemplarID ? ", EjemplarID = :ejemplarID " : "") +
+        "WHERE ReservaID = :id",
+        {
+          replacements: { 
+            estado, 
+            notas: notas || null, 
+            ejemplarID: ejemplarID || null, 
+            id 
+          },
+          type: db.sequelize.QueryTypes.UPDATE,
+          transaction: t
+        }
+      );
       
-      if (!ejemplar) {
-        return res.status(404).send({
-          message: "El ejemplar especificado no existe"
-        });
-      }
-      
-      if (ejemplar.Estado !== 'Disponible' && ejemplar.LibroID !== reserva.LibroID) {
-        return res.status(400).send({
-          message: "El ejemplar no está disponible o no corresponde al libro de la reserva"
-        });
-      }
-      
-      actualizacion.EjemplarID = ejemplarID;
-      
-      // Si el estado es "completada", actualizar también el estado del ejemplar
-      if (estado === 'completada') {
-        await Ejemplar.update(
-          { Estado: 'Prestado' },
-          { where: { EjemplarID: ejemplarID } }
-        );
+      // Si se proporciona un ejemplar, verificar y actualizar
+      if (ejemplarID && (estado === 'lista' || estado === 'completada')) {
+        // Verificar si el ejemplar existe
+        const ejemplar = await Ejemplar.findByPk(ejemplarID, { transaction: t });
         
-        // Aquí podríamos crear un préstamo automáticamente
-        // Pero eso lo dejaremos para la implementación del controlador de préstamos
+        if (!ejemplar) {
+          throw new Error("El ejemplar especificado no existe");
+        }
+        
+        if (ejemplar.Estado !== 'Disponible' && ejemplar.LibroID !== reserva.LibroID) {
+          throw new Error("El ejemplar no está disponible o no corresponde al libro de la reserva");
+        }
+        
+        // Si el estado es "completada", actualizar también el estado del ejemplar
+        if (estado === 'completada') {
+          await db.sequelize.query(
+            "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+            {
+              replacements: { ejemplarID },
+              type: db.sequelize.QueryTypes.UPDATE,
+              transaction: t
+            }
+          );
+        }
       }
-    }
-    
-    // Actualizar notas si se proporcionan
-    if (notas) {
-      actualizacion.Notas = notas;
-    }
-    
-    // Actualizar en la base de datos
-    await Reserva.update(actualizacion, {
-      where: { ReservaID: id }
     });
     
     // Obtener la reserva actualizada
@@ -550,19 +555,30 @@ exports.cancelar = async (req, res) => {
       });
     }
     
-    // Actualizar estado a cancelada
-    await Reserva.update(
-      { Estado: 'cancelada' },
-      { where: { ReservaID: id } }
-    );
-    
-    // Si hay un ejemplar asignado, liberarlo
-    if (reserva.EjemplarID) {
-      await Ejemplar.update(
-        { Estado: 'Disponible' },
-        { where: { EjemplarID: reserva.EjemplarID } }
+    // Usar una transacción para asegurar la consistencia
+    await db.sequelize.transaction(async (t) => {
+      // Actualizar estado a cancelada
+      await db.sequelize.query(
+        "UPDATE Reservas SET Estado = 'cancelada', FechaActualizacion = GETDATE() WHERE ReservaID = :id",
+        {
+          replacements: { id },
+          type: db.sequelize.QueryTypes.UPDATE,
+          transaction: t
+        }
       );
-    }
+      
+      // Si hay un ejemplar asignado, liberarlo
+      if (reserva.EjemplarID) {
+        await db.sequelize.query(
+          "UPDATE Ejemplares SET Estado = 'Disponible', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+          {
+            replacements: { ejemplarID: reserva.EjemplarID },
+            type: db.sequelize.QueryTypes.UPDATE,
+            transaction: t
+          }
+        );
+      }
+    });
     
     res.send({
       message: "La reserva ha sido cancelada exitosamente"
@@ -573,3 +589,6 @@ exports.cancelar = async (req, res) => {
     });
   }
 };
+
+// No olvides exportar el módulo
+module.exports = exports;
