@@ -43,6 +43,10 @@ const verifyToken = (req, res, next) => {
           });
         }
         
+        // Añadir información del usuario a la request
+        req.user = usuario;
+        req.userRole = usuario.tipo_usuario; // Añadir userRole basado en tipo_usuario
+        
         next();
       })
       .catch(err => {
@@ -85,7 +89,8 @@ const isAdmin = async (req, res, next) => {
     // Optimización: verificar directamente si existe el rol de administrador
     const isUserAdmin = usuario.roles.some(role => role.nombre === 'administrador');
     
-    if (isUserAdmin) {
+    if (isUserAdmin || usuario.tipo_usuario === 'administrador') {
+      req.userRole = 'administrador'; // Asegurar que userRole está correctamente establecido
       return next();
     }
     
@@ -128,7 +133,16 @@ const isBibliotecario = async (req, res, next) => {
       role.nombre === 'bibliotecario' || role.nombre === 'administrador'
     );
     
-    if (hasRequiredRole) {
+    if (hasRequiredRole || 
+        usuario.tipo_usuario === 'bibliotecario' || 
+        usuario.tipo_usuario === 'administrador') {
+      // Establecer el rol más alto para los permisos
+      if (usuario.tipo_usuario === 'administrador' || 
+          usuario.roles.some(role => role.nombre === 'administrador')) {
+        req.userRole = 'administrador';
+      } else {
+        req.userRole = 'bibliotecario';
+      }
       return next();
     }
     
@@ -171,7 +185,20 @@ const isDocente = async (req, res, next) => {
       role.nombre === 'docente' || role.nombre === 'bibliotecario' || role.nombre === 'administrador'
     );
     
-    if (hasRequiredRole) {
+    if (hasRequiredRole || 
+        usuario.tipo_usuario === 'docente' || 
+        usuario.tipo_usuario === 'bibliotecario' || 
+        usuario.tipo_usuario === 'administrador') {
+      // Establecer el rol más alto para los permisos
+      if (usuario.tipo_usuario === 'administrador' || 
+          usuario.roles.some(role => role.nombre === 'administrador')) {
+        req.userRole = 'administrador';
+      } else if (usuario.tipo_usuario === 'bibliotecario' || 
+                usuario.roles.some(role => role.nombre === 'bibliotecario')) {
+        req.userRole = 'bibliotecario';
+      } else {
+        req.userRole = 'docente';
+      }
       return next();
     }
     
@@ -221,6 +248,8 @@ const hasPermission = (permissionName) => {
       );
       
       if (hasRequiredPermission) {
+        // Asegurar que userRole está establecido basado en tipo_usuario
+        req.userRole = usuario.tipo_usuario;
         return next();
       }
       

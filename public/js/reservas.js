@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
         fechaDesde: '',
         fechaHasta: ''
     };
+    // Variable para almacenar las reservas cargadas
+    let reservasCargadas = [];
     
     // Event Listeners
     tabs.forEach(tab => {
@@ -125,8 +127,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Guardar las reservas cargadas para usar en verDetallesReserva
+            reservasCargadas = data.reservas || [];
+            
             // Renderizar reservas
-            data.reservas.forEach(reserva => {
+            reservasCargadas.forEach(reserva => {
                 // Adaptación: Asegurarse de que las propiedades existan, independientemente de la nomenclatura
                 // Comprobar si la API usa camelCase o PascalCase para las propiedades
                 const reservaId = reserva.id || reserva.Id || reserva.ReservaID || reserva.reservaID;
@@ -395,151 +400,158 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * Ver detalles de una reserva específica
+     * Ver detalles de una reserva específica usando los datos ya cargados
      * @param {string} reservaId - ID de la reserva
      */
-    async function verDetallesReserva(reservaId) {
+    function verDetallesReserva(reservaId) {
         try {
             if (!reservaId || reservaId === 'undefined' || reservaId === 'null') {
                 throw new Error('ID de reserva no válido');
             }
             
-            const response = await fetch(`/api/reservas/${reservaId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            // Buscar la reserva en los datos ya cargados
+            const reserva = reservasCargadas.find(r => {
+                const id = r.id || r.Id || r.ReservaID || r.reservaID;
+                return id == reservaId;
             });
             
-            if (!response.ok) {
-                throw new Error('Error al cargar detalles de la reserva');
+            if (!reserva) {
+                throw new Error('No se encontró la reserva seleccionada');
             }
             
-            const data = await response.json();
-            
-            // Adaptación: Manejar diferentes estructuras de datos
-            const reservaIdModal = data.id || data.Id || data.ReservaID || data.reservaID;
-            const estadoReserva = data.estado || data.Estado;
-            const fechaReserva = new Date(data.fechaReserva || data.FechaReserva).toLocaleDateString();
-            const fechaExpiracion = new Date(data.fechaExpiracion || data.FechaExpiracion).toLocaleDateString();
-            
-            // Obtener datos del libro, usuario y ejemplar
-            const libro = data.libro || data.Libro || {};
-            const usuario = data.usuario || data.Usuario || {};
-            const ejemplar = data.ejemplar || data.Ejemplar;
-            
-            const libroTitulo = libro.titulo || libro.Titulo || 'Sin título';
-            const libroISBN = libro.isbn || libro.ISBN || 'No disponible';
-            const usuarioNombre = usuario.nombre || usuario.Nombre || 'Usuario';
-            const usuarioApellido = usuario.apellido || usuario.Apellido || '';
-            const usuarioTipo = usuario.tipoUsuario || usuario.tipo_usuario || usuario.TipoUsuario || 'No especificado';
-            
-            // Crear y mostrar un modal con los detalles
-            const modal = document.createElement('div');
-            modal.id = 'modal-detalles';
-            modal.classList.add('modal');
-            
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>Detalles de la Reserva</h3>
-                        <button class="modal-close">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="detalles-reserva">
-                            <h4>${libroTitulo}</h4>
-                            <p><strong>ISBN:</strong> ${libroISBN}</p>
-                            <p><strong>Usuario:</strong> ${usuarioNombre} ${usuarioApellido}</p>
-                            <p><strong>Tipo de usuario:</strong> ${usuarioTipo}</p>
-                            <p><strong>Fecha de reserva:</strong> ${fechaReserva}</p>
-                            <p><strong>Fecha de expiración:</strong> ${fechaExpiracion}</p>
-                            <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estadoReserva)}">${estadoReserva}</span></p>
-                            ${ejemplar ? 
-                              `<p><strong>Ejemplar asignado:</strong> ${ejemplar.codigoBarras || ejemplar.CodigoBarras || ejemplar.codigo || ejemplar.Codigo || 'No disponible'}</p>` : 
-                              ''}
-                            ${data.notas || data.Notas ? 
-                              `<p><strong>Notas:</strong> ${data.notas || data.Notas}</p>` : 
-                              ''}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary modal-close">Cerrar</button>
-                        ${estadoReserva && estadoReserva.toLowerCase() === 'pendiente' ? 
-                            `<button class="btn btn-success btn-lista-modal" data-id="${reservaIdModal}">Marcar Lista</button>` : ''}
-                        ${estadoReserva && estadoReserva.toLowerCase() === 'lista' ? 
-                            `<button class="btn btn-primary btn-completar-modal" data-id="${reservaIdModal}">Completar</button>` : ''}
-                        ${estadoReserva && (estadoReserva.toLowerCase() === 'pendiente' || estadoReserva.toLowerCase() === 'lista') ? 
-                            `<button class="btn btn-danger btn-cancelar-modal" data-id="${reservaIdModal}">Cancelar</button>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            // Añadir el modal al DOM
-            document.body.appendChild(modal);
-            
-            // Mostrar el modal
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
-            
-            // Configurar event listeners para cerrar modal
-            modal.querySelectorAll('.modal-close').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        modal.remove();
-                    }, 300);
-                });
-            });
-            
-            // Configurar event listeners para botones de acción
-            const btnLista = modal.querySelector('.btn-lista-modal');
-            if (btnLista) {
-                btnLista.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        modal.remove();
-                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
-                            cambiarEstadoReserva(reservaIdModal, 'lista');
-                        } else {
-                            mostrarNotificacion('ID de reserva no válido', 'error');
-                        }
-                    }, 300);
-                });
-            }
-            
-            const btnCompletar = modal.querySelector('.btn-completar-modal');
-            if (btnCompletar) {
-                btnCompletar.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        modal.remove();
-                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
-                            cambiarEstadoReserva(reservaIdModal, 'completada');
-                        } else {
-                            mostrarNotificacion('ID de reserva no válido', 'error');
-                        }
-                    }, 300);
-                });
-            }
-            
-            const btnCancelar = modal.querySelector('.btn-cancelar-modal');
-            if (btnCancelar) {
-                btnCancelar.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        modal.remove();
-                        if (reservaIdModal && reservaIdModal !== 'undefined' && reservaIdModal !== 'null') {
-                            cambiarEstadoReserva(reservaIdModal, 'cancelada');
-                        } else {
-                            mostrarNotificacion('ID de reserva no válido', 'error');
-                        }
-                    }, 300);
-                });
-            }
+            // Mostrar el modal con los datos que ya tenemos
+            mostrarModalDetallesReserva(reserva);
             
         } catch (error) {
             console.error('Error:', error);
-            mostrarNotificacion('Error al cargar detalles de la reserva: ' + error.message, 'error');
+            mostrarNotificacion(error.message, 'error');
+        }
+    }
+    
+    /**
+     * Muestra el modal con los detalles de la reserva
+     * @param {Object} reserva - Objeto reserva con todos sus datos
+     */
+    function mostrarModalDetallesReserva(reserva) {
+        // Adaptación: Manejar diferentes estructuras de datos
+        const reservaId = reserva.id || reserva.Id || reserva.ReservaID || reserva.reservaID;
+        const estado = reserva.estado || reserva.Estado;
+        const fechaReserva = new Date(reserva.fechaReserva || reserva.FechaReserva).toLocaleDateString();
+        const fechaExpiracion = new Date(reserva.fechaExpiracion || reserva.FechaExpiracion).toLocaleDateString();
+        
+        // Obtener datos del libro, usuario y ejemplar
+        const libro = reserva.libro || reserva.Libro || {};
+        const usuario = reserva.usuario || reserva.Usuario || {};
+        const ejemplar = reserva.ejemplar || reserva.Ejemplar;
+        
+        const libroTitulo = libro.titulo || libro.Titulo || 'Sin título';
+        const libroISBN = libro.isbn || libro.ISBN || 'No disponible';
+        const usuarioNombre = usuario.nombre || usuario.Nombre || 'Usuario';
+        const usuarioApellido = usuario.apellido || usuario.Apellido || '';
+        const usuarioTipo = usuario.tipoUsuario || usuario.tipo_usuario || usuario.TipoUsuario || 'No especificado';
+        
+        // Crear y mostrar un modal con los detalles
+        const modal = document.createElement('div');
+        modal.id = 'modal-detalles';
+        modal.classList.add('modal');
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalles de la Reserva</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="detalles-reserva">
+                        <h4>${libroTitulo}</h4>
+                        <p><strong>ISBN:</strong> ${libroISBN}</p>
+                        <p><strong>Usuario:</strong> ${usuarioNombre} ${usuarioApellido}</p>
+                        <p><strong>Tipo de usuario:</strong> ${usuarioTipo}</p>
+                        <p><strong>Fecha de reserva:</strong> ${fechaReserva}</p>
+                        <p><strong>Fecha de expiración:</strong> ${fechaExpiracion}</p>
+                        <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estado)}">${estado}</span></p>
+                        ${ejemplar ? 
+                          `<p><strong>Ejemplar asignado:</strong> ${ejemplar.codigoBarras || ejemplar.CodigoBarras || ejemplar.codigo || ejemplar.Codigo || 'No disponible'}</p>` : 
+                          ''}
+                        ${reserva.notas || reserva.Notas ? 
+                          `<p><strong>Notas:</strong> ${reserva.notas || reserva.Notas}</p>` : 
+                          ''}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close">Cerrar</button>
+                    ${estado && estado.toLowerCase() === 'pendiente' ? 
+                        `<button class="btn btn-success btn-lista-modal" data-id="${reservaId}">Marcar Lista</button>` : ''}
+                    ${estado && estado.toLowerCase() === 'lista' ? 
+                        `<button class="btn btn-primary btn-completar-modal" data-id="${reservaId}">Completar</button>` : ''}
+                    ${estado && (estado.toLowerCase() === 'pendiente' || estado.toLowerCase() === 'lista') ? 
+                        `<button class="btn btn-danger btn-cancelar-modal" data-id="${reservaId}">Cancelar</button>` : ''}
+                </div>
+            </div>
+        `;
+        
+        // Añadir el modal al DOM
+        document.body.appendChild(modal);
+        
+        // Mostrar el modal
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+        
+        // Configurar event listeners para cerrar modal
+        modal.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            });
+        });
+        
+        // Configurar event listeners para botones de acción
+        const btnLista = modal.querySelector('.btn-lista-modal');
+        if (btnLista) {
+            btnLista.addEventListener('click', () => {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'lista');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
+                }, 300);
+            });
+        }
+        
+        const btnCompletar = modal.querySelector('.btn-completar-modal');
+        if (btnCompletar) {
+            btnCompletar.addEventListener('click', () => {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'completada');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
+                }, 300);
+            });
+        }
+        
+        const btnCancelar = modal.querySelector('.btn-cancelar-modal');
+        if (btnCancelar) {
+            btnCancelar.addEventListener('click', () => {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    if (reservaId && reservaId !== 'undefined' && reservaId !== 'null') {
+                        cambiarEstadoReserva(reservaId, 'cancelada');
+                    } else {
+                        mostrarNotificacion('ID de reserva no válido', 'error');
+                    }
+                }, 300);
+            });
         }
     }
     

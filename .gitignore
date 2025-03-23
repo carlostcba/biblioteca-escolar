@@ -1,7 +1,7 @@
 # Dependencias
 node_modules/
 # Archivos de entorno
-# .env
+.env
 .env.local
 .venv
 # Archivos de log
