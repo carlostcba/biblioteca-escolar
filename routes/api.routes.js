@@ -10,8 +10,9 @@ const libroRoutes = require('./libro.routes');
 const ejemplarRoutes = require('./ejemplar.routes');
 const importarRoutes = require('./importar.routes');
 const reservaRoutes = require('./reserva.routes');
-//const prestamoRoutes = require('./prestamo.routes');
-
+const prestamoRoutes = require('./prestamo.routes');
+const usuarioRoutes = require('./usuario.routes');
+//const reporteRoutes = require('./reporte.routes');
 
 // Usar las rutas
 router.use('/autores', autorRoutes);
@@ -21,7 +22,9 @@ router.use('/libros', libroRoutes);
 router.use('/ejemplares', ejemplarRoutes);
 router.use('/importar', importarRoutes);
 router.use('/reservas', reservaRoutes);
-//router.use('/prestamos', prestamoRoutes);
+router.use('/prestamos', prestamoRoutes);
+router.use('/usuarios', usuarioRoutes);
+//router.use('/reportes', reporteRoutes);
 
 // Ruta de verificación para la API
 router.get('/', (req, res) => {

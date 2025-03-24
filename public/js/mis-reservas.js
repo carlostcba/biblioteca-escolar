@@ -82,6 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
+    // Mostrar u ocultar sección de préstamos activos según la pestaña seleccionada
+    const seccionPrestamos = document.querySelector('.section-title');
+    const prestamosContainer = document.getElementById('prestamos-container');
+    
+    if (tabId === 'historial') {
+      // Ocultar sección de préstamos activos en la pestaña de historial
+      if (seccionPrestamos) seccionPrestamos.classList.add('hidden');
+      if (prestamosContainer) prestamosContainer.classList.add('hidden');
+    } else {
+      // Mostrar sección de préstamos activos en la pestaña de activas
+      if (seccionPrestamos) seccionPrestamos.classList.remove('hidden');
+      if (prestamosContainer) prestamosContainer.classList.remove('hidden');
+    }
+    
     // Cargar reservas según la tab seleccionada
     cargarMisReservas();
   }
@@ -170,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (reserva.Estado.toLowerCase() === 'lista') {
           accionesHtml = `
             <div class="reserva-acciones">
-              <p class="badge badge-success"><i class="fas fa-check-circle"></i> Lista para recoger</p>
               <button class="btn btn-danger btn-cancelar-reserva" data-id="${reserva.ReservaID}">
                 <i class="fas fa-times"></i> Cancelar Reserva
               </button>
@@ -178,31 +191,35 @@ document.addEventListener('DOMContentLoaded', function() {
           `;
         }
         
+        // Nueva estructura para formato de lista
         reservaElement.innerHTML = `
-          <div class="reserva-header">
-            <div>
-              <h3 class="reserva-titulo">${reserva.libro.Titulo}</h3>
-              <p class="reserva-isbn">ISBN: ${reserva.libro.ISBN || 'No disponible'}</p>
-            </div>
-            <span class="reserva-estado ${estadoClass}">${estadoTexto}</span>
-          </div>
-          
-          <div class="reserva-detalles">
+          <div class="reserva-info-principal">
+            <h3 class="reserva-titulo">${reserva.libro.Titulo}</h3>
+            <p class="reserva-isbn">ISBN: ${reserva.libro.ISBN || 'No disponible'}</p>
             <div class="detalle-grupo">
               <span class="detalle-etiqueta">Autor</span>
               <span class="detalle-valor">${reserva.libro.autor ? `${reserva.libro.autor.Nombre} ${reserva.libro.autor.Apellido}` : 'Desconocido'}</span>
             </div>
-            <div class="detalle-grupo">
-              <span class="detalle-etiqueta">Fecha de Reserva</span>
-              <span class="detalle-valor">${fechaReserva}</span>
-            </div>
-            <div class="detalle-grupo">
-              <span class="detalle-etiqueta">Disponible Hasta</span>
-              <span class="detalle-valor">${fechaExpiracion}</span>
-            </div>
           </div>
           
-          ${accionesHtml}
+          <div class="reserva-info-secundaria">
+            <div class="reserva-detalles">
+              <div class="detalle-grupo">
+                <span class="detalle-etiqueta">Fecha de Reserva</span>
+                <span class="detalle-valor">${fechaReserva}</span>
+              </div>
+              <div class="detalle-grupo">
+                <span class="detalle-etiqueta">Disponible Hasta</span>
+                <span class="detalle-valor">${fechaExpiracion}</span>
+              </div>
+            </div>
+            
+            <div class="reserva-estado-container">
+              <span class="reserva-estado ${estadoClass}">${estadoTexto}</span>
+            </div>
+            
+            ${accionesHtml ? `<div class="reserva-acciones-container">${accionesHtml}</div>` : ''}
+          </div>
         `;
         
         reservasContainer.appendChild(reservaElement);
@@ -245,6 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       const prestamos = await response.json();
+      console.log('Préstamos recibidos:', prestamos);
       
       prestamosContainer.innerHTML = '';
       
@@ -259,10 +277,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Crear contenedor grid para los préstamos
-      const prestamosGrid = document.createElement('div');
-      prestamosGrid.className = 'prestamos-lista';
-      prestamosContainer.appendChild(prestamosGrid);
+      // Crear contenedor para los préstamos como lista
+      const prestamosLista = document.createElement('div');
+      prestamosLista.className = 'prestamos-lista';
+      prestamosContainer.appendChild(prestamosLista);
       
       prestamos.forEach(prestamo => {
         const fechaPrestamo = new Date(prestamo.FechaPrestamo).toLocaleDateString('es-ES');
@@ -287,50 +305,57 @@ document.addEventListener('DOMContentLoaded', function() {
           vencimientoTexto = diasRestantes === 1 ? 'Vence mañana' : `Vence en ${diasRestantes} días`;
         }
         
-        // Verificar si puede renovar (lógica de ejemplo, ajustar según tu sistema)
+        // Verificar si puede renovar
         const puedeRenovar = prestamo.Estado.toLowerCase() === 'activo' && prestamo.Renovaciones < 2;
         
         const prestamoCard = document.createElement('div');
         prestamoCard.className = 'prestamo-card';
         prestamoCard.setAttribute('data-id', prestamo.PrestamoID);
         
+        // Nueva estructura para formato de lista
         prestamoCard.innerHTML = `
-          <h3 class="prestamo-titulo">${prestamo.libro.Titulo}</h3>
-          <p class="prestamo-codigo">${prestamo.ejemplar ? prestamo.ejemplar.CodigoBarras : 'No disponible'}</p>
-          
-          <div class="prestamo-info">
+          <div class="prestamo-info-principal">
+            <h3 class="prestamo-titulo">${prestamo.ejemplar?.libro?.Titulo || 'Título no disponible'}</h3>
+            <p class="prestamo-codigo">${prestamo.ejemplar ? prestamo.ejemplar.CodigoBarras : 'No disponible'}</p>
             <div class="info-row">
               <span class="info-label">Autor:</span>
-              <span class="info-value">${prestamo.libro.autor ? `${prestamo.libro.autor.Nombre} ${prestamo.libro.autor.Apellido}` : 'Desconocido'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Prestado el:</span>
-              <span class="info-value">${fechaPrestamo}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Vencimiento:</span>
-              <span class="info-value">${fechaDevolucion}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Renovaciones:</span>
-              <span class="info-value">${prestamo.Renovaciones || 0} de 2</span>
+              <span class="info-value">${prestamo.ejemplar?.libro?.autor ? `${prestamo.ejemplar.libro.autor.Nombre} ${prestamo.ejemplar.libro.autor.Apellido}` : 'Desconocido'}</span>
             </div>
           </div>
           
-          <div class="fecha-vencimiento ${vencimientoClass}">
-            ${vencimientoTexto}
-          </div>
-          
-          ${puedeRenovar ? `
-            <div class="reserva-acciones">
-              <button class="btn btn-primary btn-renovar-prestamo" data-id="${prestamo.PrestamoID}">
-                <i class="fas fa-redo-alt"></i> Renovar Préstamo
-              </button>
+          <div class="prestamo-info-secundaria">
+            <div class="prestamo-info-fechas">
+              <div class="info-row">
+                <span class="info-label">Prestado el:</span>
+                <span class="info-value">${fechaPrestamo}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Vencimiento:</span>
+                <span class="info-value">${fechaDevolucion}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Renovaciones:</span>
+                <span class="info-value">${prestamo.Renovaciones || 0} de 2</span>
+              </div>
             </div>
-          ` : ''}
+            
+            <div class="prestamo-estado">
+              <div class="fecha-vencimiento ${vencimientoClass}">
+                ${vencimientoTexto}
+              </div>
+            </div>
+            
+            <div class="prestamo-acciones">
+              ${puedeRenovar ? `
+                <button class="btn btn-primary btn-renovar-prestamo" data-id="${prestamo.PrestamoID}">
+                  <i class="fas fa-redo-alt"></i> Renovar
+                </button>
+              ` : ''}
+            </div>
+          </div>
         `;
         
-        prestamosGrid.appendChild(prestamoCard);
+        prestamosLista.appendChild(prestamoCard);
       });
       
       // Agregar event listeners para botones de renovar
@@ -342,11 +367,12 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error detallado:', error);
       prestamosContainer.innerHTML = `
         <div class="error-message">
           <i class="fas fa-exclamation-circle"></i>
-          <p>Error al cargar tus préstamos. Por favor, intenta nuevamente.</p>
+          <p>Error al cargar tus préstamos: ${error.message}</p>
+          <button onclick="cargarMisPrestamos()" class="btn btn-small">Reintentar</button>
         </div>
       `;
     }
@@ -455,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
       prestamoSeleccionado = prestamo;
       
       // Mostrar título del libro en el modal
-      modalTituloRenovar.textContent = prestamo.libro.Titulo;
+      modalTituloRenovar.textContent = prestamo.ejemplar?.libro?.Titulo || 'Libro seleccionado';
       
       // Abrir modal
       modalRenovar.classList.add('active');
@@ -573,4 +599,143 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
+  
+  /**
+   * Actualiza la información de un libro específico
+   * @param {string} libroId - ID del libro a actualizar
+   */
+  async function obtenerDetallesLibro(libroId) {
+    try {
+      const response = await fetch(`/api/libros/${libroId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener detalles del libro');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error:', error);
+      mostrarNotificacion('Error al obtener información del libro', 'error');
+      return null;
+    }
+  }
+  
+  /**
+   * Formatea una fecha para mostrarla en la interfaz
+   * @param {string|Date} fecha - Fecha a formatear
+   * @param {boolean} incluirHora - Si se debe incluir la hora en el formato
+   * @returns {string} - Fecha formateada
+   */
+  function formatearFecha(fecha, incluirHora = false) {
+    if (!fecha) return 'No disponible';
+    
+    try {
+      const fechaObj = new Date(fecha);
+      const opciones = {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        ...(incluirHora ? { hour: '2-digit', minute: '2-digit' } : {})
+      };
+      return fechaObj.toLocaleDateString('es-ES', opciones);
+    } catch (error) {
+      console.error('Error al formatear fecha:', error);
+      return fecha.toString();
+    }
+  }
+  
+  /**
+   * Verifica si un préstamo está vencido
+   * @param {Object} prestamo - Objeto con información del préstamo
+   * @returns {boolean} - True si está vencido, false en caso contrario
+   */
+  function prestamoVencido(prestamo) {
+    if (!prestamo || !prestamo.FechaDevolucion) return false;
+    
+    const fechaVencimiento = new Date(prestamo.FechaDevolucion);
+    const hoy = new Date();
+    
+    // Establecer ambas fechas a la medianoche para comparar solo días
+    fechaVencimiento.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+    
+    return fechaVencimiento < hoy;
+  }
+  
+  /**
+   * Calcula el tiempo restante para la expiración de una reserva
+   * @param {Object} reserva - Objeto con información de la reserva
+   * @returns {Object} - Objeto con la información sobre el tiempo restante
+   */
+  function calcularTiempoRestante(reserva) {
+    if (!reserva || !reserva.FechaExpiracion) {
+      return { dias: 0, estado: 'vencida', mensaje: 'Sin información' };
+    }
+    
+    const fechaExpiracion = new Date(reserva.FechaExpiracion);
+    const hoy = new Date();
+    
+    // Establecer ambas fechas a la medianoche para comparar solo días
+    fechaExpiracion.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+    
+    // Calcular diferencia en días
+    const diferenciaTiempo = fechaExpiracion.getTime() - hoy.getTime();
+    const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+    
+    let estado, mensaje;
+    
+    if (diferenciaDias < 0) {
+      estado = 'vencida';
+      mensaje = `Expiró hace ${Math.abs(diferenciaDias)} días`;
+    } else if (diferenciaDias === 0) {
+      estado = 'expira-hoy';
+      mensaje = 'Expira hoy';
+    } else if (diferenciaDias === 1) {
+      estado = 'expira-pronto';
+      mensaje = 'Expira mañana';
+    } else if (diferenciaDias <= 3) {
+      estado = 'expira-pronto';
+      mensaje = `Expira en ${diferenciaDias} días`;
+    } else {
+      estado = 'vigente';
+      mensaje = `Disponible por ${diferenciaDias} días más`;
+    }
+    
+    return { dias: diferenciaDias, estado, mensaje };
+  }
+  
+  /**
+   * Actualiza la UI según el perfil del usuario
+   */
+  function configurarUISegunPerfil() {
+    const tipoUsuario = userInfo.tipo_usuario?.toLowerCase();
+    
+    // Ajustar UI para cada tipo de usuario
+    if (tipoUsuario === 'alumno') {
+      // Configuraciones específicas para alumnos
+      const limiteRenovaciones = 1; // Los alumnos solo pueden renovar una vez
+      
+      // Actualizar los textos informativos
+      document.querySelectorAll('.info-renovaciones').forEach(el => {
+        el.textContent = `${limiteRenovaciones} renovación permitida`;
+      });
+      
+    } else if (tipoUsuario === 'docente') {
+      // Configuraciones específicas para docentes
+      const limiteRenovaciones = 2; // Los docentes pueden renovar dos veces
+      
+      // Actualizar los textos informativos
+      document.querySelectorAll('.info-renovaciones').forEach(el => {
+        el.textContent = `${limiteRenovaciones} renovaciones permitidas`;
+      });
+    }
+  }
+  
+  // Configurar UI según el perfil del usuario al cargar la página
+  configurarUISegunPerfil();
 });

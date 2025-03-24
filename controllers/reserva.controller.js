@@ -4,6 +4,7 @@ const Reserva = db.Reserva;
 const Libro = db.Libro;
 const Usuario = db.Usuario;
 const Ejemplar = db.Ejemplar;
+const Prestamo = db.Prestamo;
 const Op = db.Sequelize.Op;
 
 // Crear una nueva reserva
@@ -327,7 +328,13 @@ exports.obtenerMisReservas = async (req, res) => {
       include: [
         {
           model: Libro,
-          as: 'libro'
+          as: 'libro',
+          include: [
+            {
+              model: db.Autor,
+              as: 'autor'
+            }
+          ]
         }
       ],
       order: [['FechaReserva', 'DESC']]
@@ -440,7 +447,8 @@ exports.cambiarEstado = async (req, res) => {
         req.userRole !== 'bibliotecario') {
       
       // Los usuarios solo pueden cancelar sus propias reservas
-      if (req.userId === reserva.UsuarioID && estado === 'cancelada') {// Permitir
+      if (req.userId === reserva.UsuarioID && estado === 'cancelada') {
+        // Permitir
       } else {
         return res.status(403).send({
           message: "No tienes permiso para modificar esta reserva"
@@ -481,16 +489,101 @@ exports.cambiarEstado = async (req, res) => {
           throw new Error("El ejemplar no está disponible o no corresponde al libro de la reserva");
         }
         
-        // Si el estado es "completada", actualizar también el estado del ejemplar
-        if (estado === 'completada') {
+        // Si el estado es "lista", actualizar estado del ejemplar a "Reservado"
+        if (estado === 'lista') {
           await db.sequelize.query(
-            "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+            "UPDATE Ejemplares SET Estado = 'Reservado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
             {
               replacements: { ejemplarID },
               type: db.sequelize.QueryTypes.UPDATE,
               transaction: t
             }
           );
+        }
+        
+        // Si el estado es "completada", actualizar el estado del ejemplar y CREAR PRÉSTAMO
+        if (estado === 'completada') {
+          try {
+            // Verificar explícitamente si ya existe un préstamo para este ejemplar y usuario
+            const prestamoExistente = await db.sequelize.query(
+              `SELECT PrestamoID FROM Prestamos WHERE EjemplarID = :ejemplarID AND UsuarioID = :usuarioID AND Estado = 'Activo'`,
+              {
+                replacements: { 
+                  ejemplarID: ejemplarID || reserva.EjemplarID,
+                  usuarioID: reserva.UsuarioID
+                },
+                type: db.sequelize.QueryTypes.SELECT,
+                transaction: t
+              }
+            );
+            
+            if (prestamoExistente.length === 0) {
+              // No existe préstamo, crear uno nuevo
+              
+              // Intentar obtener configuración de días de préstamo
+              let diasPrestamo = 14; // Valor por defecto
+              try {
+                const configDiasPrestamo = await db.sequelize.query(
+                  "SELECT ConfigValue FROM SystemConfig WHERE ConfigKey = 'dias_prestamo_default'",
+                  {
+                    type: db.sequelize.QueryTypes.SELECT,
+                    transaction: t
+                  }
+                );
+                
+                if (configDiasPrestamo && configDiasPrestamo.length > 0) {
+                  diasPrestamo = parseInt(configDiasPrestamo[0].ConfigValue) || 14;
+                }
+              } catch (configError) {
+                console.error("Error al obtener configuración de días de préstamo:", configError);
+                // Continuamos con el valor por defecto
+              }
+              
+              // Calcular fecha de devolución
+              const fechaDevolucion = new Date();
+              fechaDevolucion.setDate(fechaDevolucion.getDate() + diasPrestamo);
+              
+              // Crear el préstamo usando INSERT directo para asegurar que funcione
+              await db.sequelize.query(
+                `INSERT INTO Prestamos (
+                  EjemplarID, UsuarioID, FechaPrestamo, FechaDevolucion, 
+                  Estado, Renovaciones, BibliotecarioID, Notas, 
+                  MultaImporte, MultaPagada, FechaCreacion, FechaActualizacion
+                ) VALUES (
+                  :ejemplarID, :usuarioID, GETDATE(), :fechaDevolucion,
+                  'Activo', 0, :bibliotecarioID, :notasPrestamo,
+                  0, 0, GETDATE(), GETDATE()
+                )`,
+                {
+                  replacements: { 
+                    ejemplarID: ejemplarID || reserva.EjemplarID,
+                    usuarioID: reserva.UsuarioID,
+                    fechaDevolucion: fechaDevolucion.toISOString().slice(0, 19).replace('T', ' '),
+                    bibliotecarioID: req.userId,
+                    notasPrestamo: `Generado a partir de la reserva #${id}`
+                  },
+                  type: db.sequelize.QueryTypes.INSERT,
+                  transaction: t
+                }
+              );
+              console.log(`Préstamo creado para la reserva #${id}, ejemplar #${ejemplarID || reserva.EjemplarID}`);
+            } else {
+              console.log(`Ya existe un préstamo para el ejemplar #${ejemplarID || reserva.EjemplarID} y usuario #${reserva.UsuarioID}`);
+            }
+            
+            // Actualizar el estado del ejemplar a "Prestado"
+            await db.sequelize.query(
+              "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+              {
+                replacements: { ejemplarID: ejemplarID || reserva.EjemplarID },
+                type: db.sequelize.QueryTypes.UPDATE,
+                transaction: t
+              }
+            );
+          } catch (error) {
+            console.error("Error al crear el préstamo:", error);
+            throw new Error(`Error al crear el préstamo: ${error.message}`);
+          }
         }
       }
     });
@@ -517,8 +610,36 @@ exports.cambiarEstado = async (req, res) => {
     const respuesta = reservaActualizada.toJSON();
     respuesta.ejemplar = ejemplarActualizado;
     
+    // Si el estado es completada, buscar y adjuntar el préstamo generado
+    if (estado === 'completada' && (ejemplarID || reserva.EjemplarID)) {
+      try {
+        const prestamo = await db.sequelize.query(
+          `SELECT * FROM Prestamos 
+           WHERE EjemplarID = :ejemplarID 
+           AND UsuarioID = :usuarioID 
+           AND Notas LIKE :notasBusqueda
+           ORDER BY FechaCreacion DESC`,
+          {
+            replacements: { 
+              ejemplarID: ejemplarID || reserva.EjemplarID,
+              usuarioID: reserva.UsuarioID,
+              notasBusqueda: `%reserva #${id}%`
+            },
+            type: db.sequelize.QueryTypes.SELECT
+          }
+        );
+        
+        if (prestamo && prestamo.length > 0) {
+          respuesta.prestamo = prestamo[0];
+        }
+      } catch (prestamoError) {
+        console.error("Error al buscar el préstamo generado:", prestamoError);
+      }
+    }
+    
     res.send(respuesta);
   } catch (err) {
+    console.error("Error en cambiarEstado:", err);
     res.status(500).send({
       message: err.message || "Error al cambiar el estado de la reserva."
     });
@@ -590,5 +711,314 @@ exports.cancelar = async (req, res) => {
   }
 };
 
-// No olvides exportar el módulo
+// Convertir reserva a préstamo (función específica)
+exports.convertirAPrestamo = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { diasPrestamo = 14 } = req.body;
+    
+    // Verificar que el usuario sea bibliotecario o administrador
+    if (req.userRole !== 'administrador' && req.userRole !== 'bibliotecario') {
+      return res.status(403).send({
+        message: "No tienes permiso para realizar esta acción"
+      });
+    }
+    
+    // Buscar la reserva
+    const reserva = await Reserva.findByPk(id, {
+      include: [
+        {
+          model: Libro,
+          as: 'libro'
+        },
+        {
+          model: Usuario,
+          as: 'usuario'
+        }
+      ]
+    });
+    
+    if (!reserva) {
+      return res.status(404).send({
+        message: `No se encontró la reserva con ID=${id}.`
+      });
+    }
+    
+    // Verificar que la reserva esté en estado "lista"
+    if (reserva.Estado !== 'lista') {
+      return res.status(400).send({
+        message: "Solo se pueden convertir a préstamo las reservas en estado 'lista'"
+      });
+    }
+    
+    // Verificar que tenga un ejemplar asignado
+    if (!reserva.EjemplarID) {
+      return res.status(400).send({
+        message: "La reserva no tiene un ejemplar asignado"
+      });
+    }
+    
+    // Verificar si ya existe un préstamo activo
+    const prestamoExistente = await db.sequelize.query(
+      `SELECT PrestamoID FROM Prestamos 
+       WHERE EjemplarID = :ejemplarID AND UsuarioID = :usuarioID AND Estado = 'Activo'`,
+      {
+        replacements: { 
+          ejemplarID: reserva.EjemplarID,
+          usuarioID: reserva.UsuarioID
+        },
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    if (prestamoExistente.length > 0) {
+      return res.status(400).send({
+        message: "Ya existe un préstamo activo para este ejemplar y usuario"
+      });
+    }
+    
+    // Usar una transacción para asegurar la consistencia
+    const result = await db.sequelize.transaction(async (t) => {
+      // Calcular fecha de devolución
+      const fechaDevolucion = new Date();
+      fechaDevolucion.setDate(fechaDevolucion.getDate() + parseInt(diasPrestamo));
+      
+      // Crear el préstamo
+      const [prestamoInsertResult] = await db.sequelize.query(
+        `INSERT INTO Prestamos (
+          EjemplarID, UsuarioID, FechaPrestamo, FechaDevolucion, 
+          Estado, Renovaciones, BibliotecarioID, Notas, MultaImporte, MultaPagada,
+          FechaCreacion, FechaActualizacion
+        ) OUTPUT INSERTED.PrestamoID
+        VALUES (
+          :ejemplarID, :usuarioID, GETDATE(), :fechaDevolucion,
+          'Activo', 0, :bibliotecarioID, :notasPrestamo, 0, 0, 
+          GETDATE(), GETDATE()
+        )`,
+        {
+          replacements: { 
+            ejemplarID: reserva.EjemplarID,
+            usuarioID: reserva.UsuarioID,
+            fechaDevolucion: fechaDevolucion.toISOString().slice(0, 19).replace('T', ' '),
+            bibliotecarioID: req.userId,
+            notasPrestamo: `Generado a partir de la reserva #${id}`
+          },
+          type: db.sequelize.QueryTypes.INSERT,
+          transaction: t
+        }
+      );
+      
+      // Obtener el ID del préstamo insertado
+      const prestamoID = prestamoInsertResult.length > 0 ? prestamoInsertResult[0].PrestamoID : null;
+      
+      if (!prestamoID) {
+        throw new Error("Error al crear el préstamo - No se pudo obtener el ID");
+      }
+      
+      // Actualizar la reserva a "completada"
+      await db.sequelize.query(
+        "UPDATE Reservas SET Estado = 'completada', FechaActualizacion = GETDATE() WHERE ReservaID = :id",
+        {
+          replacements: { id },
+          type: db.sequelize.QueryTypes.UPDATE,
+          transaction: t
+        }
+      );
+      
+      // Actualizar el estado del ejemplar a "Prestado"
+      await db.sequelize.query(
+        "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+        {
+          replacements: { ejemplarID: reserva.EjemplarID },
+          type: db.sequelize.QueryTypes.UPDATE,
+          transaction: t
+        }
+      );
+      
+      return { prestamoID };
+    });
+    
+    // Obtener el préstamo creado
+    const prestamo = await db.sequelize.query(
+      "SELECT * FROM Prestamos WHERE PrestamoID = :prestamoID",
+      {
+        replacements: { prestamoID: result.prestamoID },
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    res.status(200).send({
+      message: "Reserva convertida a préstamo exitosamente",
+      prestamo: prestamo.length > 0 ? prestamo[0] : null,
+      reservaID: id
+    });
+  } catch (err) {
+    console.error("Error en convertirAPrestamo:", err);
+    res.status(500).send({
+      message: err.message || "Error al convertir la reserva a préstamo."
+    });
+  }
+};
+
+// Verificar reservas vencidas (para tareas programadas)
+exports.verificarReservasVencidas = async () => {
+  try {
+    console.log("Iniciando verificación de reservas vencidas...");
+    const ahora = new Date();
+    
+    // Buscar reservas pendientes o listas que ya expiraron
+    const reservasVencidas = await Reserva.findAll({
+      where: {
+        Estado: {
+          [Op.in]: ['pendiente', 'lista']
+        },
+        FechaExpiracion: {
+          [Op.lt]: ahora
+        }
+      }
+    });
+    
+    console.log(`Se encontraron ${reservasVencidas.length} reservas vencidas.`);
+    
+    if (reservasVencidas.length === 0) {
+      return {
+        message: "No hay reservas vencidas para procesar",
+        count: 0
+      };
+    }
+    
+    // Procesar cada reserva vencida
+    let procesadas = 0;
+    
+    for (const reserva of reservasVencidas) {
+      try {
+        await db.sequelize.transaction(async (t) => {
+          // Actualizar estado de la reserva a vencida
+          await db.sequelize.query(
+            "UPDATE Reservas SET Estado = 'vencida', FechaActualizacion = GETDATE() WHERE ReservaID = :id",
+            {
+              replacements: { id: reserva.ReservaID },
+              type: db.sequelize.QueryTypes.UPDATE,
+              transaction: t
+            }
+          );
+          
+          // Si hay un ejemplar asignado, liberarlo
+          if (reserva.EjemplarID) {
+            await db.sequelize.query(
+              "UPDATE Ejemplares SET Estado = 'Disponible', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
+              {
+                replacements: { ejemplarID: reserva.EjemplarID },
+                type: db.sequelize.QueryTypes.UPDATE,
+                transaction: t
+              }
+            );
+          }
+        });
+        
+        procesadas++;
+      } catch (error) {
+        console.error(`Error al procesar reserva vencida #${reserva.ReservaID}:`, error);
+      }
+    }
+    
+    return {
+      message: `Se han procesado ${procesadas} reservas vencidas`,
+      count: procesadas
+    };
+  } catch (err) {
+    console.error("Error en verificarReservasVencidas:", err);
+    throw err;
+  }
+};
+
+// Estadísticas de reservas
+exports.obtenerEstadisticas = async (req, res) => {
+  try {
+    // Verificar que el usuario sea bibliotecario o administrador
+    if (req.userRole !== 'administrador' && req.userRole !== 'bibliotecario') {
+      return res.status(403).send({
+        message: "No tienes permiso para acceder a estas estadísticas"
+      });
+    }
+    
+    // Estadísticas por estado
+    const estadoPorEstado = await db.sequelize.query(
+      `SELECT Estado, COUNT(*) as total 
+       FROM Reservas 
+       GROUP BY Estado`,
+      {
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    // Total de reservas por mes (últimos 6 meses)
+    const reservasPorMes = await db.sequelize.query(
+      `SELECT DATEPART(YEAR, FechaReserva) as año,
+              DATEPART(MONTH, FechaReserva) as mes,
+              COUNT(*) as total
+       FROM Reservas
+       WHERE FechaReserva >= DATEADD(MONTH, -6, GETDATE())
+       GROUP BY DATEPART(YEAR, FechaReserva), DATEPART(MONTH, FechaReserva)
+       ORDER BY año, mes`,
+      {
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    // Tasa de conversión (reservas completadas vs canceladas o vencidas)
+    const tasaConversion = await db.sequelize.query(
+      `SELECT 
+         SUM(CASE WHEN Estado = 'completada' THEN 1 ELSE 0 END) as completadas,
+         SUM(CASE WHEN Estado IN ('cancelada', 'vencida') THEN 1 ELSE 0 END) as no_completadas,
+         SUM(CASE WHEN Estado = 'completada' THEN 1 ELSE 0 END) * 100.0 / 
+            NULLIF(COUNT(*), 0) as tasa_conversion
+       FROM Reservas
+       WHERE Estado IN ('completada', 'cancelada', 'vencida')`,
+      {
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    // Tiempo promedio entre reserva y préstamo
+    const tiempoPromedio = await db.sequelize.query(
+      `SELECT AVG(DATEDIFF(HOUR, r.FechaReserva, p.FechaPrestamo)) as horas_promedio
+       FROM Reservas r
+       JOIN Prestamos p ON p.EjemplarID = r.EjemplarID AND p.UsuarioID = r.UsuarioID
+       WHERE r.Estado = 'completada'
+       AND p.Notas LIKE '%reserva%'`,
+      {
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    // Libros más reservados
+    const librosPopulares = await db.sequelize.query(
+      `SELECT TOP 10
+         l.LibroID, l.Titulo,
+         COUNT(r.ReservaID) as total_reservas
+       FROM Reservas r
+       JOIN Libros l ON r.LibroID = l.LibroID
+       GROUP BY l.LibroID, l.Titulo
+       ORDER BY total_reservas DESC`,
+      {
+        type: db.sequelize.QueryTypes.SELECT
+      }
+    );
+    
+    res.send({
+      porEstado: estadoPorEstado,
+      porMes: reservasPorMes,
+      tasaConversion: tasaConversion[0] || { completadas: 0, no_completadas: 0, tasa_conversion: 0 },
+      tiempoPromedio: tiempoPromedio[0] || { horas_promedio: 0 },
+      librosPopulares: librosPopulares
+    });
+  } catch (err) {
+    console.error("Error en obtenerEstadisticas:", err);
+    res.status(500).send({
+      message: err.message || "Error al obtener las estadísticas de reservas."
+    });
+  }
+};
+
 module.exports = exports;

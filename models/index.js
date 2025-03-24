@@ -31,7 +31,8 @@ db.Editorial = require('./editorial.model')(sequelize, DataTypes);
 db.Categoria = require('./categoria.model')(sequelize, DataTypes);
 db.Libro = require('./libro.model')(sequelize, DataTypes);
 db.Ejemplar = require('./ejemplar.model')(sequelize, DataTypes);
-db.Reserva = require('./reserva.model')(sequelize, DataTypes);  // Asegúrate de que este modelo esté importado
+db.Reserva = require('./reserva.model')(sequelize, DataTypes);
+db.Prestamo = require('./prestamo.model')(sequelize, DataTypes);
 
 // Importar nuevos modelos de autenticación
 db.Usuario = require('./usuario.model')(sequelize, DataTypes);
@@ -127,6 +128,43 @@ db.Reserva.belongsTo(db.Ejemplar, {
 db.Ejemplar.hasMany(db.Reserva, {
   foreignKey: 'EjemplarID',
   as: 'reservas'
+});
+
+// Relaciones para el modelo de Préstamo
+// Un préstamo pertenece a un ejemplar
+db.Prestamo.belongsTo(db.Ejemplar, {
+  foreignKey: 'EjemplarID',
+  as: 'ejemplar'
+});
+
+// Un ejemplar tiene muchos préstamos (históricamente)
+db.Ejemplar.hasMany(db.Prestamo, {
+  foreignKey: 'EjemplarID',
+  as: 'prestamos'
+});
+
+// Un préstamo pertenece a un usuario
+db.Prestamo.belongsTo(db.Usuario, {
+  foreignKey: 'UsuarioID',
+  as: 'usuario'
+});
+
+// Un usuario tiene muchos préstamos
+db.Usuario.hasMany(db.Prestamo, {
+  foreignKey: 'UsuarioID',
+  as: 'prestamos'
+});
+
+// Relaciones para el bibliotecario que registra el préstamo
+db.Prestamo.belongsTo(db.Usuario, {
+  foreignKey: 'BibliotecarioID',
+  as: 'bibliotecario'
+});
+
+// Relaciones para el bibliotecario que registra la devolución
+db.Prestamo.belongsTo(db.Usuario, {
+  foreignKey: 'BibliotecarioDevolucionID',
+  as: 'bibliotecarioDevolucion'
 });
 
 // Definir relaciones para los nuevos modelos de autenticación

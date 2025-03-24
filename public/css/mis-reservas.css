@@ -1,547 +1,294 @@
 /* public/css/mis-reservas.css */
 :root {
-    --primary-color: #4a6da7;
-    --primary-dark: #345380;
-    --primary-light: #d4e0f3;
-    --secondary-color: #ff8c42;
-    --secondary-light: #ffdac1;
-    --dark-color: #2d3748;
-    --gray-color: #718096;
-    --light-gray: #e2e8f0;
-    --white-color: #ffffff;
-    --success-color: #48bb78;
-    --danger-color: #e53e3e;
-    --warning-color: #ecc94b;
-  }
-  
-  /* Estilos para las pestañas */
-  .tabs {
-    display: flex;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--light-gray);
-    padding: 0;
-  }
-  
-  .tab {
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--gray-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    bottom: -2px;
-    margin-right: 0.5rem;
-    border-bottom: 2px solid transparent;
-  }
-  
-  .tab:hover {
-    color: var(--primary-color);
-  }
-  
-  .tab.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-  }
-  
-  /* Estilos para la lista de reservas */
-  .reservas-lista {
-    padding: 1rem 0;
-  }
-  
-  .reserva-item {
-    background-color: var(--white-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
+  --primary-color: #4a6da7;
+  --primary-dark: #345380;
+  --primary-light: #d4e0f3;
+  --secondary-color: #ff8c42;
+  --secondary-light: #ffdac1;
+  --dark-color: #2d3748;
+  --gray-color: #718096;
+  --light-gray: #e2e8f0;
+  --white-color: #ffffff;
+  --success-color: #48bb78;
+  --danger-color: #e53e3e;
+  --warning-color: #ecc94b;
+}
+
+/* Estilos generales */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7fafc;
+  color: var(--dark-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Pestañas */
+.tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--light-gray);
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--gray-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--primary-color);
+}
+
+.tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Listas de Reservas y Préstamos */
+.reservas-lista,
+.prestamos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.reserva-item,
+.prestamo-card {
+  background-color: var(--white-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.reserva-item:hover,
+.prestamo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Información principal */
+.reserva-info-principal,
+.prestamo-info-principal {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.reserva-titulo,
+.prestamo-titulo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: 0.25rem;
+}
+
+.reserva-isbn,
+.prestamo-codigo {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+}
+
+/* Información secundaria */
+.reserva-info-secundaria,
+.prestamo-info-secundaria {
+  flex: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reserva-detalles,
+.prestamo-info-fechas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detalle-etiqueta,
+.info-label {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+}
+
+.detalle-valor,
+.info-value {
+  font-weight: 500;
+  color: var(--dark-color);
+}
+
+/* Estados */
+.reserva-estado,
+.fecha-vencimiento {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.estado-pendiente { background-color: #fef3c7; color: #92400e; }
+.estado-lista { background-color: #c6f6d5; color: #2f855a; }
+.estado-completada { background-color: var(--light-gray); color: var(--gray-color); }
+.estado-cancelada { background-color: #fed7d7; color: #c53030; }
+.estado-vencida { background-color: #fee2e2; color: #b91c1c; }
+
+.plazo-normal { background-color: #dcfce7; color: #166534; }
+.vence-pronto { background-color: #fef3c7; color: #92400e; }
+.vencido { background-color: #fee2e2; color: #b91c1c; }
+
+/* Acciones */
+.reserva-acciones,
+.prestamo-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn i { margin-right: 0.5rem; }
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c53030;
+}
+
+/* Estado vacío */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background-color: var(--white-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Modales */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Notificaciones */
+.notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slide-in 0.3s ease-out;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reserva-item,
+  .prestamo-card {
     flex-direction: column;
-  }
-  
-  .reserva-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  }
-  
-  .reserva-header {
-    display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
   }
-  
-  .reserva-titulo {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--dark-color);
-    margin: 0 0 0.25rem 0;
-  }
-  
-  .reserva-isbn {
-    font-size: 0.85rem;
-    color: var(--gray-color);
-    margin: 0;
-  }
-  
-  .reserva-estado {
-    padding: 0.35rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  
-  .estado-pendiente {
-    background-color: var(--warning-color);
-    color: #805900;
-  }
-  
-  .estado-lista {
-    background-color: var(--success-color);
-    color: #1a4a2d;
-  }
-  
-  .estado-completada {
-    background-color: var(--light-gray);
-    color: var(--gray-color);
-  }
-  
-  .estado-cancelada {
-    background-color: #fbd5d5;
-    color: var(--danger-color);
-  }
-  
-  .estado-vencida {
-    background-color: #fed7d7;
-    color: #9b2c2c;
-  }
-  
-  .reserva-detalles {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .detalle-grupo {
-    display: flex;
+
+  .reserva-info-secundaria,
+  .prestamo-info-secundaria {
     flex-direction: column;
-  }
-  
-  .detalle-etiqueta {
-    font-size: 0.85rem;
-    color: var(--gray-color);
-    margin-bottom: 0.25rem;
-  }
-  
-  .detalle-valor {
-    font-weight: 500;
-  }
-  
-  .reserva-acciones {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
+    width: 100%;
+    gap: 1rem;
     margin-top: 1rem;
   }
-  
-  .btn {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    border: none;
-  }
-  
-  .btn i {
-    margin-right: 0.5rem;
-  }
-  
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-  }
-  
-  .btn-primary:hover {
-    background-color: var(--primary-dark);
-  }
-  
-  .btn-secondary {
-    background-color: var(--light-gray);
-    color: var(--dark-color);
-  }
-  
-  .btn-secondary:hover {
-    background-color: #cbd5e0;
-  }
-  
-  .btn-danger {
-    background-color: var(--danger-color);
-    color: white;
-  }
-  
-  .btn-danger:hover {
-    background-color: #c53030;
-  }
-  
-  /* Estado vacío */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    background-color: var(--white-color);
-    border-radius: 8px;
-    text-align: center;
-  }
-  
-  .empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-  
-  .empty-state h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: var(--dark-color);
-  }
-  
-  .empty-state p {
-    color: var(--gray-color);
-    margin-bottom: 1.5rem;
-    max-width: 400px;
-  }
-  
-  /* Sección de préstamos */
-  .section-title {
-    margin: 2rem 0 1rem;
-    border-bottom: 1px solid var(--light-gray);
-    padding-bottom: 0.5rem;
-  }
-  
-  .section-title h3 {
-    font-size: 1.25rem;
-    color: var(--dark-color);
-    margin: 0;
-  }
-  
-  .prestamos-lista {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-  }
-  
-  .prestamo-card {
-    background-color: var(--white-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .prestamo-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  }
-  
-  .prestamo-titulo {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--dark-color);
-    margin: 0 0 0.5rem 0;
-  }
-  
-  .prestamo-codigo {
-    font-size: 0.8rem;
-    color: var(--gray-color);
-    margin-bottom: 1rem;
-  }
-  
-  .prestamo-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-  }
-  
-  .info-label {
-    color: var(--gray-color);
-  }
-  
-  .info-value {
-    font-weight: 500;
-  }
-  
-  .fecha-vencimiento {
-    padding: 0.5rem;
-    text-align: center;
-    margin-top: auto;
-    border-radius: 4px;
-  }
-  
-  .vence-pronto {
-    background-color: #fef3c7;
-    color: #92400e;
-  }
-  
-  .vencido {
-    background-color: #fee2e2;
-    color: #b91c1c;
-  }
-  
-  .plazo-normal {
-    background-color: #dcfce7;
-    color: #166534;
-  }
-  
-  /* Loader */
-  .loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    color: var(--gray-color);
-    font-weight: 500;
-  }
-  
-  .loader::after {
-    content: "...";
-    animation: loading-dots 1.5s infinite;
-  }
-  
-  @keyframes loading-dots {
-    0%, 20% { content: "."; }
-    40% { content: ".."; }
-    60%, 100% { content: "..."; }
-  }
-  
-  /* Mensajes de error */
-  .error-message {
-    background-color: #fee2e2;
-    border-left: 4px solid var(--danger-color);
-    padding: 1rem;
-    margin: 1rem 0;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .error-message i {
-    color: var(--danger-color);
-    font-size: 1.5rem;
-    margin-right: 1rem;
-  }
-  
-  /* Notificaciones */
-  .notification {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    width: 300px;
-    z-index: 1100;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .notification-item {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    animation: slide-in 0.3s ease-out;
-  }
-  
-  @keyframes slide-in {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  .notification-item i {
-    margin-right: 0.75rem;
-    font-size: 1.25rem;
-  }
-  
-  .notification-success i {
-    color: var(--success-color);
-  }
-  
-  .notification-error i {
-    color: var(--danger-color);
-  }
-  
-  .notification-warning i {
-    color: var(--warning-color);
-  }
-  
-  .notification-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-    color: var(--gray-color);
-    transition: color 0.2s;
-  }
-  
-  .notification-close:hover {
-    color: var(--dark-color);
-  }
-  
-  /* Empty state pequeño */
-  .empty-state.small {
-    padding: 1.5rem;
-  }
-  
-  .empty-state.small h3 {
-    font-size: 1.1rem;
-  }
-  
-  /* Modal de cancelación y renovación */
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
+
+  .reserva-acciones,
+  .prestamo-acciones {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+    flex-direction: column;
+    align-items: stretch;
   }
-  
-  .modal.active {
-    opacity: 1;
-    visibility: visible;
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
-  
-  .modal-content {
-    background-color: white;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transform: translateY(-20px);
-    transition: transform 0.3s;
-  }
-  
-  .modal.active .modal-content {
-    transform: translateY(0);
-  }
-  
-  .modal-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--light-gray);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .modal-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: var(--dark-color);
-  }
-  
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--gray-color);
-    transition: color 0.2s;
-  }
-  
-  .modal-close:hover {
-    color: var(--dark-color);
-  }
-  
-  .modal-body {
-    padding: 1.5rem;
-  }
-  
-  .modal-actions {
-    padding: 1rem 1.5rem;
-    background-color: #f9fafb;
-    border-top: 1px solid var(--light-gray);
-    border-radius: 0 0 8px 8px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-  }
-  
-  /* Estados y notificaciones */
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 500;
-  }
-  
-  .badge-warning {
-    background-color: #feebcb;
-    color: #c05621;
-  }
-  
-  .badge-danger {
-    background-color: #fed7d7;
-    color: #c53030;
-  }
-  
-  .badge-success {
-    background-color: #c6f6d5;
-    color: #2f855a;
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .reserva-header {
-      flex-direction: column;
-    }
-    
-    .reserva-estado {
-      margin-top: 0.5rem;
-      align-self: flex-start;
-    }
-    
-    .reserva-detalles {
-      grid-template-columns: 1fr;
-    }
-    
-    .reserva-acciones {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .reserva-acciones .btn {
-      width: 100%;
-      margin-bottom: 0.5rem;
-    }
-    
-    .prestamos-lista {
-      grid-template-columns: 1fr;
-    }
-  }
+}
