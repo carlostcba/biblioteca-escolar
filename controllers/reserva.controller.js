@@ -502,89 +502,108 @@ exports.cambiarEstado = async (req, res) => {
         }
         
         // Si el estado es "completada", actualizar el estado del ejemplar y CREAR PRÉSTAMO
-        if (estado === 'completada') {
-          try {
-            // Verificar explícitamente si ya existe un préstamo para este ejemplar y usuario
-            const prestamoExistente = await db.sequelize.query(
-              `SELECT PrestamoID FROM Prestamos WHERE EjemplarID = :ejemplarID AND UsuarioID = :usuarioID AND Estado = 'Activo'`,
-              {
-                replacements: { 
-                  ejemplarID: ejemplarID || reserva.EjemplarID,
-                  usuarioID: reserva.UsuarioID
-                },
-                type: db.sequelize.QueryTypes.SELECT,
-                transaction: t
-              }
-            );
-            
-            if (prestamoExistente.length === 0) {
-              // No existe préstamo, crear uno nuevo
-              
-              // Intentar obtener configuración de días de préstamo
-              let diasPrestamo = 14; // Valor por defecto
-              try {
-                const configDiasPrestamo = await db.sequelize.query(
-                  "SELECT ConfigValue FROM SystemConfig WHERE ConfigKey = 'dias_prestamo_default'",
-                  {
-                    type: db.sequelize.QueryTypes.SELECT,
-                    transaction: t
-                  }
-                );
-                
-                if (configDiasPrestamo && configDiasPrestamo.length > 0) {
-                  diasPrestamo = parseInt(configDiasPrestamo[0].ConfigValue) || 14;
-                }
-              } catch (configError) {
-                console.error("Error al obtener configuración de días de préstamo:", configError);
-                // Continuamos con el valor por defecto
-              }
-              
-              // Calcular fecha de devolución
-              const fechaDevolucion = new Date();
-              fechaDevolucion.setDate(fechaDevolucion.getDate() + diasPrestamo);
-              
-              // Crear el préstamo usando INSERT directo para asegurar que funcione
-              await db.sequelize.query(
-                `INSERT INTO Prestamos (
-                  EjemplarID, UsuarioID, FechaPrestamo, FechaDevolucion, 
-                  Estado, Renovaciones, BibliotecarioID, Notas, 
-                  MultaImporte, MultaPagada, FechaCreacion, FechaActualizacion
-                ) VALUES (
-                  :ejemplarID, :usuarioID, GETDATE(), :fechaDevolucion,
-                  'Activo', 0, :bibliotecarioID, :notasPrestamo,
-                  0, 0, GETDATE(), GETDATE()
-                )`,
-                {
-                  replacements: { 
-                    ejemplarID: ejemplarID || reserva.EjemplarID,
-                    usuarioID: reserva.UsuarioID,
-                    fechaDevolucion: fechaDevolucion.toISOString().slice(0, 19).replace('T', ' '),
-                    bibliotecarioID: req.userId,
-                    notasPrestamo: `Generado a partir de la reserva #${id}`
-                  },
-                  type: db.sequelize.QueryTypes.INSERT,
-                  transaction: t
-                }
-              );
-              console.log(`Préstamo creado para la reserva #${id}, ejemplar #${ejemplarID || reserva.EjemplarID}`);
-            } else {
-              console.log(`Ya existe un préstamo para el ejemplar #${ejemplarID || reserva.EjemplarID} y usuario #${reserva.UsuarioID}`);
-            }
-            
-            // Actualizar el estado del ejemplar a "Prestado"
-            await db.sequelize.query(
-              "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = :ejemplarID",
-              {
-                replacements: { ejemplarID: ejemplarID || reserva.EjemplarID },
-                type: db.sequelize.QueryTypes.UPDATE,
-                transaction: t
-              }
-            );
-          } catch (error) {
-            console.error("Error al crear el préstamo:", error);
-            throw new Error(`Error al crear el préstamo: ${error.message}`);
+if (estado === 'completada') {
+  try {
+    console.log(`Iniciando proceso para crear préstamo para reserva #${id} con ejemplar #${ejemplarID || reserva.EjemplarID}`);
+    
+    // Verificar que tenemos el ID del ejemplar
+    const ejemplarParaPrestamo = ejemplarID || reserva.EjemplarID;
+    if (!ejemplarParaPrestamo) {
+      throw new Error("La reserva no tiene un ejemplar asignado para el préstamo");
+    }
+    
+    // Verificar explícitamente si ya existe un préstamo para este ejemplar y usuario
+    const prestamoExistente = await db.sequelize.query(
+      `SELECT PrestamoID FROM Prestamos WHERE EjemplarID = :ejemplarID AND UsuarioID = :usuarioID AND Estado = 'Activo'`,
+      {
+        replacements: { 
+          ejemplarID: ejemplarParaPrestamo,
+          usuarioID: reserva.UsuarioID
+        },
+        type: db.sequelize.QueryTypes.SELECT,
+        transaction: t
+      }
+    );
+    
+    console.log(`Verificación de préstamos existentes para ejemplar #${ejemplarParaPrestamo} y usuario #${reserva.UsuarioID}:`, prestamoExistente);
+    
+    if (prestamoExistente.length === 0) {
+      console.log("No hay préstamos existentes, procediendo a crear uno nuevo");
+      
+      // Configurar días de préstamo
+      let diasPrestamo = 14; // Valor por defecto
+      try {
+        const configDiasPrestamo = await db.sequelize.query(
+          "SELECT ConfigValue FROM SystemConfig WHERE ConfigKey = 'dias_prestamo_default'",
+          {
+            type: db.sequelize.QueryTypes.SELECT,
+            transaction: t
           }
+        );
+        
+        if (configDiasPrestamo && configDiasPrestamo.length > 0) {
+          diasPrestamo = parseInt(configDiasPrestamo[0].ConfigValue) || 14;
         }
+      } catch (configError) {
+        console.error("Error al obtener configuración de días de préstamo:", configError);
+        // Continuamos con el valor por defecto
+      }
+      
+      // Calcular fecha de devolución
+      const fechaDevolucion = new Date();
+      fechaDevolucion.setDate(fechaDevolucion.getDate() + diasPrestamo);
+      console.log(`Fecha de devolución calculada: ${fechaDevolucion.toISOString()}`);
+      
+      // Usar una consulta SQL directa para la inserción
+      const insertQuery = `
+        INSERT INTO Prestamos (
+          EjemplarID, UsuarioID, FechaPrestamo, FechaDevolucion, 
+          Estado, Renovaciones, Notas, MultaImporte, MultaPagada, 
+          BibliotecarioID, FechaCreacion, FechaActualizacion
+        ) VALUES (
+          @ejemplarID, @usuarioID, GETDATE(), @fechaDevolucion,
+          'Activo', 0, @notas, 0, 0, 
+          @bibliotecarioID, GETDATE(), GETDATE()
+        )
+      `;
+      
+      // Ejecutar la inserción con parámetros nombrados
+      await db.sequelize.query(
+        insertQuery,
+        {
+          bind: {
+            ejemplarID: ejemplarParaPrestamo,
+            usuarioID: reserva.UsuarioID,
+            fechaDevolucion: fechaDevolucion.toISOString().slice(0, 19).replace('T', ' '),
+            notas: `Generado a partir de la reserva #${id}`,
+            bibliotecarioID: req.userId || 1 // Usar 1 como valor por defecto si no hay ID de bibliotecario
+          },
+          type: db.sequelize.QueryTypes.INSERT,
+          transaction: t
+        }
+      );
+      
+      console.log(`Préstamo creado exitosamente para la reserva #${id}, ejemplar #${ejemplarParaPrestamo}`);
+      
+      // Actualizar el estado del ejemplar a "Prestado"
+      await db.sequelize.query(
+        "UPDATE Ejemplares SET Estado = 'Prestado', FechaActualizacion = GETDATE() WHERE EjemplarID = @ejemplarID",
+        {
+          bind: { ejemplarID: ejemplarParaPrestamo },
+          type: db.sequelize.QueryTypes.UPDATE,
+          transaction: t
+        }
+      );
+      
+      console.log(`Estado del ejemplar #${ejemplarParaPrestamo} actualizado a 'Prestado'`);
+    } else {
+      console.log(`Ya existe un préstamo para el ejemplar #${ejemplarParaPrestamo} y usuario #${reserva.UsuarioID}`);
+    }
+  } catch (error) {
+    console.error("Error al crear el préstamo:", error);
+    throw new Error(`Error al crear el préstamo: ${error.message}`);
+  }
+}
       }
     });
     

@@ -12,6 +12,12 @@
   --success-color: #48bb78;
   --danger-color: #e53e3e;
   --warning-color: #ecc94b;
+  
+  /* Nuevos colores para diferenciar secciones */
+  --reserva-bg: #f0f4ff;
+  --prestamo-bg: #f0fff4;
+  --reserva-border: #c7d5ff;
+  --prestamo-border: #c6f6d5;
 }
 
 /* Estilos generales */
@@ -63,23 +69,81 @@ body {
   width: 100%;
 }
 
-.reserva-item,
-.prestamo-card {
-  background-color: var(--white-color);
+/* Sección título con estilo distintivo */
+.section-title {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.section-title h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  padding-left: 1rem;
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--prestamo-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 0 4px 4px 0;
+  display: inline-block;
+}
+
+/* Estilos para reservas */
+.reserva-item {
+  background-color: var(--reserva-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   transition: all 0.3s ease;
+  border-left: 4px solid var(--reserva-border);
 }
 
-.reserva-item:hover,
+.reserva-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para préstamos */
+.prestamo-card {
+  background-color: var(--prestamo-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--prestamo-border);
+}
+
 .prestamo-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Iconos diferenciadores */
+.reserva-item::before,
+.prestamo-card::before {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  font-size: 1.2rem;
+  margin-right: 1rem;
+  opacity: 0.7;
+}
+
+.reserva-item::before {
+  content: '\f02e'; /* Icono de marcador/bookmark */
+  color: var(--primary-color);
+}
+
+.prestamo-card::before {
+  content: '\f02d'; /* Icono de libro */
+  color: var(--success-color);
 }
 
 /* Información principal */
@@ -120,10 +184,18 @@ body {
   gap: 0.5rem;
 }
 
+.detalle-grupo, .info-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.3rem;
+}
+
 .detalle-etiqueta,
 .info-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--gray-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .detalle-valor,
@@ -139,6 +211,7 @@ body {
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
+  display: inline-block;
 }
 
 .estado-pendiente { background-color: #fef3c7; color: #92400e; }
@@ -238,6 +311,39 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--dark-color);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--gray-color);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-actions {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-top: 1px solid var(--light-gray);
+}
+
 /* Notificaciones */
 .notification {
   position: fixed;
@@ -257,6 +363,18 @@ body {
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   animation: slide-in 0.3s ease-out;
+}
+
+.notification-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.notification-error {
+  border-left: 4px solid var(--danger-color);
+}
+
+.notification-warning {
+  border-left: 4px solid var(--warning-color);
 }
 
 @keyframes slide-in {
