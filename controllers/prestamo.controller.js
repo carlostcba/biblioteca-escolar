@@ -66,7 +66,49 @@ exports.crear = async (req, res) => {
 // Obtener todos los préstamos
 exports.obtenerTodos = async (req, res) => {
   try {
-    const data = await Prestamo.findAll({
+    // Obtener parámetros de consulta
+    const tipo = req.query.tipo || 'Activos';
+    const pagina = parseInt(req.query.pagina) || 1;
+    const tamañoPagina = parseInt(req.query.size) || 10;
+    
+    // Calcular offset para paginación
+    const offset = (pagina - 1) * tamañoPagina;
+    
+    // Configurar condición de filtro según el tipo
+    let condicion = {};
+    
+    switch(tipo) {
+      case 'activos':
+        condicion.Estado = 'Activo';
+        break;
+      case 'vencidos':
+        condicion.Estado = 'Vencido';
+        break;
+      case 'historial':
+        condicion.Estado = 'Devuelto';
+        break;
+      // Si el tipo no es reconocido, mostrar todos
+      default:
+        break;
+    }
+    
+    // Añadir filtros adicionales si se proporcionan
+    if (req.query.usuario) {
+      // Podrías implementar una búsqueda por relación con usuario
+      // Por ejemplo, buscando por coincidencia en nombre/apellido
+    }
+    
+    if (req.query.libro) {
+      // Similar, búsqueda por título de libro en la relación
+    }
+    
+    if (req.query.estado && tipo === 'historial') {
+      condicion.Estado = req.query.estado;
+    }
+    
+    // Realizar la consulta con los filtros y paginación
+    const { count, rows } = await Prestamo.findAndCountAll({
+      where: condicion,
       include: [
         {
           model: Ejemplar,
@@ -85,13 +127,23 @@ exports.obtenerTodos = async (req, res) => {
           ]
         },
         {
-          model: db.Usuario,  // Añadir el modelo de Usuario
+          model: db.Usuario,
           as: 'usuario',
-          attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']  // Solo incluir los campos necesarios
+          attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
         }
-      ]
+      ],
+      limit: tamañoPagina,
+      offset: offset,
+      order: [['FechaPrestamo', 'DESC']]
     });
-    res.send(data);
+    
+    // Enviar respuesta paginada
+    res.send({
+      prestamos: rows,
+      paginaActual: pagina,
+      totalItems: count,
+      totalPaginas: Math.ceil(count / tamañoPagina)
+    });
   } catch (err) {
     console.error("Error al obtener préstamos:", err);
     res.status(500).send({
