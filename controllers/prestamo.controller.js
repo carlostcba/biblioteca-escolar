@@ -83,6 +83,11 @@ exports.obtenerTodos = async (req, res) => {
               ]
             }
           ]
+        },
+        {
+          model: db.Usuario,  // Añadir el modelo de Usuario
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']  // Solo incluir los campos necesarios
         }
       ]
     });
