@@ -6,62 +6,77 @@
   <title>Acceso Denegado - Biblioteca Escolar</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .access-denied-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .access-denied-icon {
+      font-size: 5rem;
+      color: #e53e3e;
+      margin-bottom: 2rem;
+    }
+    
+    .access-denied-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+    
+    .access-denied-message {
+      margin-bottom: 2rem;
+      color: #718096;
+      line-height: 1.6;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
   <header>
     <div class="container">
       <h1>Biblioteca Escolar</h1>
       <nav>
-        <ul class="nav-left">
-          <!-- Navegación básica para todos los usuarios -->
-          <li><a href="/" id="nav-inicio">Inicio</a></li>
-          <li><a href="/catalogo.html" id="nav-catalogo">Catálogo</a></li>
-          
-          <!-- Navegación solo para usuarios autenticados -->
-          <li class="user-only hidden"><a href="/mis-reservas.html" id="nav-mis-reservas">Mis Reservas</a></li>
-          
-          <!-- Navegación para bibliotecarios y administradores -->
-          <li class="bibliotecario-only hidden"><a href="/dashboard.html" id="nav-dashboard">Dashboard</a></li>
-          <li class="bibliotecario-only hidden"><a href="/prestamos.html" id="nav-prestamos">Préstamos</a></li>
-          <li class="bibliotecario-only hidden"><a href="/reservas.html" id="nav-reservas">Reservas</a></li>
-          <li class="bibliotecario-only hidden"><a href="/importar.html" id="nav-importar">Importar</a></li>
-          
-          <!-- Navegación exclusiva para administradores -->
-          <li class="admin-only hidden"><a href="/reportes.html" id="nav-reportes">Reportes</a></li>
-          <li class="admin-only hidden"><a href="/perfiles.html" id="nav-perfiles">Perfiles</a></li>
-          <li class="admin-only hidden"><a href="/admin-usuarios.html" id="nav-usuarios">Usuarios</a></li>
-        </ul>
-        <ul class="nav-right">
-          <!-- Opciones para usuarios no autenticados -->
-          <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
-          <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
-          
-          <!-- Opciones para usuarios autenticados -->
-          <li class="user-only hidden dropdown">
-            <a href="#" class="dropdown-toggle" id="user-menu">
-              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
-            </a>
-            <div class="dropdown-menu">
-              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
-              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
-            </div>
-          </li>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
         </ul>
       </nav>
     </div>
   </header>
   
   <main class="container">
-    <div class="error-page">
-      <div class="error-icon">
-        <i class="fas fa-exclamation-triangle"></i>
+    <div class="access-denied-container">
+      <div class="access-denied-icon">
+        <i class="fas fa-lock"></i>
       </div>
-      <h2>Acceso Denegado</h2>
-      <p>Lo sentimos, no tienes permiso para acceder a esta página.</p>
-      <p>Esta sección requiere privilegios de administrador.</p>
-      <div class="error-actions">
-        <a href="/catalogo.html" class="btn btn-primary">
-          <i class="fas fa-home"></i> Ir al Catálogo
+      
+      <h2 class="access-denied-title">Acceso Denegado</h2>
+      
+      <p class="access-denied-message">
+        Lo sentimos, no tienes permiso para acceder a esta página.
+        Esta sección requiere privilegios de administrador o bibliotecario.
+      </p>
+      
+      <div class="btn-group">
+        <a href="/" class="btn btn-primary">
+          <i class="fas fa-home"></i> Volver al Inicio
+        </a>
+        <a href="/catalogo.html" class="btn btn-secondary">
+          <i class="fas fa-book"></i> Explorar Catálogo
         </a>
       </div>
     </div>
@@ -69,7 +84,7 @@
   
   <footer>
     <div class="container">
-      <p>Biblioteca Escolar &copy; 2025</p>
+      <p>Biblioteca Escolar &copy; 2025 - Todos los derechos reservados.</p>
     </div>
   </footer>
   

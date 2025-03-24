@@ -1,19 +1,25 @@
 // js/prestamos.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar autenticación
-    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    const userInfo = localStorage.getItem('user_info') ? JSON.parse(localStorage.getItem('user_info')) : null;
+    console.log("Prestamos.js loaded, checking authentication");
     
-    if (!token || !userInfo) {
-        window.location.href = '/login.html';
+    // Verificar autenticación y permisos de administrador
+    if (!window.AuthService || !window.AuthService.isAuthenticated()) {
+        console.log("User not authenticated, redirecting to login");
+        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
         return;
     }
     
-    // Verificar autorización (solo admin y bibliotecarios pueden acceder)
-    if (userInfo.tipo_usuario !== 'administrador' && userInfo.tipo_usuario !== 'bibliotecario') {
+    // Verificar si el usuario tiene permisos de admin o bibliotecario
+    if (!window.AuthService.isAdmin()) {
+        console.log("User does not have admin privileges, redirecting");
         window.location.href = '/acceso-denegado.html';
         return;
     }
+    
+    console.log("User has required permissions, continuing");
+    
+    // Obtener token para las solicitudes API
+    const token = window.AuthService.getToken();
     
     // Elementos DOM
     const tabs = document.querySelectorAll('.tab');
@@ -95,16 +101,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
+                // Si el error es de autorización, puede que el token haya expirado
+                if (response.status === 401 || response.status === 403) {
+                    console.log("Authorization error, logging out");
+                    window.AuthService.logout(); // Cerrar sesión y redirigir al login
+                    return;
+                }
                 throw new Error('Error al cargar préstamos');
             }
             
             const data = await response.json();
+            console.log("Datos recibidos:", data); // Para depuración
             
             // Vaciar contenedor
             prestamosContainer.innerHTML = '';
             
+            // Verificar la estructura de la respuesta
+            const prestamos = data.prestamos || data;
+            
             // Si no hay préstamos, mostrar mensaje
-            if (!data.prestamos || data.prestamos.length === 0) {
+            if (!prestamos || prestamos.length === 0) {
                 prestamosContainer.innerHTML = `
                     <div class="no-results">
                         <i class="fas fa-info-circle"></i>
@@ -116,16 +132,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Renderizar préstamos
-            data.prestamos.forEach(prestamo => {
-                const fechaPrestamo = new Date(prestamo.fechaPrestamo).toLocaleDateString();
-                const fechaDevolucion = new Date(prestamo.fechaDevolucion).toLocaleDateString();
+            prestamos.forEach(prestamo => {
+                // Adaptamos el acceso a las propiedades según la estructura real que recibimos
+                const ejemplar = prestamo.ejemplar || {};
+                const libro = ejemplar.libro || {};
+                const autor = libro.autor || {};
+                const usuario = prestamo.usuario || { nombre: "Usuario", apellido: "Desconocido" };
+                
+                const fechaPrestamo = new Date(prestamo.FechaPrestamo || prestamo.fechaPrestamo).toLocaleDateString();
+                const fechaDevolucion = new Date(prestamo.FechaDevolucion || prestamo.fechaDevolucion).toLocaleDateString();
+                
+                // Determinar estado (respetando la capitalización de la BD)
+                const estado = prestamo.Estado || prestamo.estado || "activo";
                 
                 const prestamoElement = document.createElement('div');
                 prestamoElement.classList.add('prestamo-card');
                 
                 // Determinar clase de estado
                 let estadoClass = '';
-                switch (prestamo.estado) {
+                switch (estado.toLowerCase()) {
                     case 'activo':
                         estadoClass = 'status-active';
                         break;
@@ -141,22 +166,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 prestamoElement.innerHTML = `
                     <div class="prestamo-info">
-                        <h3 class="prestamo-titulo">${prestamo.libro.titulo}</h3>
-                        <p class="prestamo-usuario">Usuario: ${prestamo.usuario.nombre} ${prestamo.usuario.apellido}</p>
+                        <h3 class="prestamo-titulo">${libro.Titulo || libro.titulo || "Título no disponible"}</h3>
+                        <p class="prestamo-usuario">Usuario: ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                        <p>Autor: ${autor.Nombre || autor.nombre || ""} ${autor.Apellido || autor.apellido || ""}</p>
+                        <p>Ejemplar: ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "N/A"}</p>
                         <p class="prestamo-fechas">
                             <span>Préstamo: ${fechaPrestamo}</span>
                             <span>Devolución: ${fechaDevolucion}</span>
                         </p>
                         <div class="prestamo-estado">
-                            <span class="status-badge ${estadoClass}">${prestamo.estado}</span>
+                            <span class="status-badge ${estadoClass}">${estado}</span>
                         </div>
                     </div>
                     <div class="prestamo-acciones">
-                        <button class="btn btn-sm btn-secondary btn-detalles" data-id="${prestamo.id}">
+                        <button class="btn btn-sm btn-secondary btn-detalles" data-id="${prestamo.PrestamoID || prestamo.prestamoID || prestamo.id}">
                             <i class="fas fa-info-circle"></i> Detalles
                         </button>
-                        ${prestamo.estado === 'activo' || prestamo.estado === 'vencido' ? 
-                            `<button class="btn btn-sm btn-primary btn-devolver" data-id="${prestamo.id}">
+                        ${['activo', 'vencido', 'Activo', 'Vencido'].includes(estado) ? 
+                            `<button class="btn btn-sm btn-primary btn-devolver" data-id="${prestamo.PrestamoID || prestamo.prestamoID || prestamo.id}">
                                 <i class="fas fa-undo"></i> Devolver
                             </button>` : ''
                         }
@@ -166,8 +193,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 prestamosContainer.appendChild(prestamoElement);
             });
             
-            // Configurar paginación
-            configurarPaginacion(data.totalPaginas, data.paginaActual);
+            // Configurar paginación si existe la información de página
+            if (data.totalPaginas) {
+                configurarPaginacion(data.totalPaginas, data.paginaActual);
+            } else {
+                paginacion.innerHTML = '';
+            }
             
             // Agregar event listeners a los botones
             document.querySelectorAll('.btn-detalles').forEach(btn => {
@@ -189,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
             prestamosContainer.innerHTML = `
                 <div class="error-message">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Error al cargar los préstamos. Por favor, intenta nuevamente.</p>
+                    <p>Error al cargar los préstamos: ${error.message}. Por favor, intenta nuevamente.</p>
                 </div>
             `;
         }
@@ -254,30 +285,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Botón "Siguiente"
-    const btnSiguiente = document.createElement('div');
-    btnSiguiente.classList.add('page-item');
-    if (paginaActual === totalPaginas) btnSiguiente.classList.add('disabled');
-    btnSiguiente.textContent = '»';
-    btnSiguiente.addEventListener('click', () => {
-        if (paginaActual < totalPaginas) {
-            cambiarPagina(paginaActual + 1);
-        }
-    });
-    paginacion.appendChild(btnSiguiente);
-}
+        const btnSiguiente = document.createElement('div');
+        btnSiguiente.classList.add('page-item');
+        if (paginaActual === totalPaginas) btnSiguiente.classList.add('disabled');
+        btnSiguiente.textContent = '»';
+        btnSiguiente.addEventListener('click', () => {
+            if (paginaActual < totalPaginas) {
+                cambiarPagina(paginaActual + 1);
+            }
+        });
+        paginacion.appendChild(btnSiguiente);
+    }
 
-/**
- * Cambia a la página especificada y actualiza los préstamos
- * @param {number} pagina - Número de página
- */
-function cambiarPagina(pagina) {
-    paginaActual = pagina;
-    cargarPrestamos();
-    // Hacer scroll al inicio del contenedor
-    prestamosContainer.scrollIntoView({ behavior: 'smooth' });
-}
-
-/**
+    /**
+     * Cambia a la página especificada y actualiza los préstamos
+     * @param {number} pagina - Número de página
+     */
+    function cambiarPagina(pagina) {
+        paginaActual = pagina;
+        cargarPrestamos();
+        // Hacer scroll al inicio del contenedor
+        prestamosContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+    /**
  * Abre el modal para realizar un nuevo préstamo
  */
 function abrirModalNuevoPrestamo() {
@@ -359,25 +389,45 @@ async function cargarInfoPrestamo(prestamoId) {
         });
         
         if (!response.ok) {
+            // Si el error es de autorización, cerrar sesión
+            if (response.status === 401 || response.status === 403) {
+                window.AuthService.logout();
+                return;
+            }
             throw new Error('Error al cargar información del préstamo');
         }
         
         const data = await response.json();
+        console.log("Información del préstamo:", data); // Para depuración
+        
+        // Adaptar acceso a las propiedades según la estructura real
+        const ejemplar = data.ejemplar || {};
+        const libro = ejemplar.libro || {};
+        const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
+        const estado = data.Estado || data.estado || "activo";
         
         // Rellenar la información en el modal
         const modal = document.getElementById('modal-devolucion');
         const infoContainer = modal.querySelector('.prestamo-info');
         
         if (infoContainer) {
-            const fechaPrestamo = new Date(data.fechaPrestamo).toLocaleDateString();
-            const fechaDevolucion = new Date(data.fechaDevolucion).toLocaleDateString();
+            const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
+            const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
+            
+            let estadoClass = '';
+            if (estado.toLowerCase() === 'vencido') {
+                estadoClass = 'status-overdue';
+            } else {
+                estadoClass = 'status-active';
+            }
             
             infoContainer.innerHTML = `
-                <p><strong>Libro:</strong> ${data.libro.titulo}</p>
-                <p><strong>Usuario:</strong> ${data.usuario.nombre} ${data.usuario.apellido}</p>
+                <p><strong>Libro:</strong> ${libro.Titulo || libro.titulo || "No disponible"}</p>
+                <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
                 <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
                 <p><strong>Fecha de devolución:</strong> ${fechaDevolucion}</p>
-                <p><strong>Estado:</strong> <span class="status-badge ${data.estado === 'vencido' ? 'status-overdue' : 'status-active'}">${data.estado}</span></p>
+                <p><strong>Estado:</strong> <span class="status-badge ${estadoClass}">${estado}</span></p>
             `;
         }
         
@@ -390,7 +440,7 @@ async function cargarInfoPrestamo(prestamoId) {
             infoContainer.innerHTML = `
                 <div class="error-message">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Error al cargar información del préstamo.</p>
+                    <p>Error al cargar información del préstamo: ${error.message}</p>
                 </div>
             `;
         }
@@ -410,9 +460,11 @@ async function procesarNuevoPrestamo(event) {
     const prestamo = Object.fromEntries(formData.entries());
     
     try {
-        // Mostrar indicador de carga
+        // Guardar el texto original del botón
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        
+        // Mostrar indicador de carga
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
         
@@ -427,6 +479,12 @@ async function procesarNuevoPrestamo(event) {
         });
         
         if (!response.ok) {
+            // Manejar error de autorización
+            if (response.status === 401 || response.status === 403) {
+                window.AuthService.logout();
+                return;
+            }
+            
             const errorData = await response.json();
             throw new Error(errorData.message || 'Error al procesar el préstamo');
         }
@@ -455,7 +513,7 @@ async function procesarNuevoPrestamo(event) {
         // Restaurar botón
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+        submitBtn.innerHTML = originalText || 'Registrar Préstamo';
     }
 }
 
@@ -472,9 +530,11 @@ async function procesarDevolucion(event) {
     const datos = Object.fromEntries(formData.entries());
     
     try {
-        // Mostrar indicador de carga
+        // Guardar el texto original del botón
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        
+        // Mostrar indicador de carga
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
         
@@ -486,12 +546,18 @@ async function procesarDevolucion(event) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                estado: datos.estado,
-                observaciones: datos.observaciones
+                estado: datos.estado || 'devuelto',
+                observaciones: datos.observaciones || ''
             })
         });
         
         if (!response.ok) {
+            // Manejar error de autorización
+            if (response.status === 401 || response.status === 403) {
+                window.AuthService.logout();
+                return;
+            }
+            
             const errorData = await response.json();
             throw new Error(errorData.message || 'Error al procesar la devolución');
         }
@@ -520,7 +586,7 @@ async function procesarDevolucion(event) {
         // Restaurar botón
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+        submitBtn.innerHTML = originalText || 'Registrar Devolución';
     }
 }
 
@@ -537,19 +603,34 @@ async function verDetallesPrestamo(prestamoId) {
         });
         
         if (!response.ok) {
+            // Manejar error de autorización
+            if (response.status === 401 || response.status === 403) {
+                window.AuthService.logout();
+                return;
+            }
             throw new Error('Error al cargar detalles del préstamo');
         }
         
         const data = await response.json();
+        console.log("Detalles del préstamo:", data); // Para depuración
+        
+        // Adaptar acceso a las propiedades según la estructura real
+        const ejemplar = data.ejemplar || {};
+        const libro = ejemplar.libro || {};
+        const autor = libro.autor || {};
+        const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
+        const estado = data.Estado || data.estado || "activo";
         
         // Crear y mostrar un modal con los detalles
         const modal = document.createElement('div');
         modal.classList.add('modal');
         modal.id = 'modal-detalles-prestamo';
         
-        const fechaPrestamo = new Date(data.fechaPrestamo).toLocaleDateString();
-        const fechaDevolucion = new Date(data.fechaDevolucion).toLocaleDateString();
-        const fechaDevolucionReal = data.fechaDevolucionReal ? new Date(data.fechaDevolucionReal).toLocaleDateString() : 'No devuelto';
+        const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
+        const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
+        const fechaDevolucionReal = data.FechaDevolucionReal || data.fechaDevolucionReal 
+            ? new Date(data.FechaDevolucionReal || data.fechaDevolucionReal).toLocaleDateString() 
+            : 'No devuelto';
         
         modal.innerHTML = `
             <div class="modal-content">
@@ -559,19 +640,20 @@ async function verDetallesPrestamo(prestamoId) {
                 </div>
                 <div class="modal-body">
                     <div class="detalles-prestamo">
-                        <h4>${data.libro.titulo}</h4>
-                        <p><strong>Ejemplar:</strong> ${data.ejemplar ? data.ejemplar.codigoBarras : 'No disponible'}</p>
-                        <p><strong>Usuario:</strong> ${data.usuario.nombre} ${data.usuario.apellido}</p>
-                        <p><strong>Tipo de usuario:</strong> ${data.usuario.tipoUsuario}</p>
+                        <h4>${libro.Titulo || libro.titulo || "Título no disponible"}</h4>
+                        <p><strong>Autor:</strong> ${autor.Nombre || autor.nombre || ""} ${autor.Apellido || autor.apellido || ""}</p>
+                        <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
+                        <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                        <p><strong>Tipo de usuario:</strong> ${usuario.tipo_usuario || usuario.tipoUsuario || "No disponible"}</p>
                         <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
                         <p><strong>Fecha de devolución esperada:</strong> ${fechaDevolucion}</p>
                         <p><strong>Fecha de devolución real:</strong> ${fechaDevolucionReal}</p>
-                        <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(data.estado)}">${data.estado}</span></p>
-                        ${data.observaciones ? `<p><strong>Observaciones:</strong> ${data.observaciones}</p>` : ''}
+                        <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estado)}">${estado}</span></p>
+                        ${data.Notas || data.notas ? `<p><strong>Observaciones:</strong> ${data.Notas || data.notas}</p>` : ''}
                         ${data.multa ? `
                             <div class="multa-info">
-                                <p><strong>Multa:</strong> $${data.multa.monto.toFixed(2)}</p>
-                                <p><strong>Estado de multa:</strong> ${data.multa.pagada ? 'Pagada' : 'Pendiente'}</p>
+                                <p><strong>Multa:</strong> $${(data.multa.monto || data.MultaImporte || 0).toFixed(2)}</p>
+                                <p><strong>Estado de multa:</strong> ${data.multa.pagada || data.MultaPagada ? 'Pagada' : 'Pendiente'}</p>
                                 ${data.multa.fechaPago ? `<p><strong>Fecha de pago:</strong> ${new Date(data.multa.fechaPago).toLocaleDateString()}</p>` : ''}
                             </div>
                         ` : ''}
@@ -579,8 +661,8 @@ async function verDetallesPrestamo(prestamoId) {
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary modal-close">Cerrar</button>
-                    ${data.estado === 'activo' || data.estado === 'vencido' ? 
-                        `<button class="btn btn-primary btn-devolver-detalle" data-id="${data.id}">Registrar Devolución</button>` : ''}
+                    ${['activo', 'vencido', 'Activo', 'Vencido'].includes(estado) ? 
+                        `<button class="btn btn-primary btn-devolver-detalle" data-id="${data.PrestamoID || data.prestamoID || data.id}">Registrar Devolución</button>` : ''}
                 </div>
             </div>
         `;
@@ -617,7 +699,7 @@ async function verDetallesPrestamo(prestamoId) {
         
     } catch (error) {
         console.error('Error:', error);
-        mostrarNotificacion('Error al cargar detalles del préstamo', 'error');
+        mostrarNotificacion('Error al cargar detalles del préstamo: ' + error.message, 'error');
     }
 }
 
@@ -627,13 +709,17 @@ async function verDetallesPrestamo(prestamoId) {
  * @returns {string} - Clase CSS correspondiente
  */
 function getEstadoClass(estado) {
-    switch (estado) {
+    switch (estado.toLowerCase()) {
         case 'activo':
             return 'status-active';
         case 'vencido':
             return 'status-overdue';
         case 'devuelto':
             return 'status-returned';
+        case 'perdido':
+            return 'status-lost';
+        case 'dañado':
+            return 'status-damaged';
         default:
             return '';
     }
@@ -645,49 +731,59 @@ function getEstadoClass(estado) {
  * @param {string} tipo - Tipo de notificación ('success', 'error', 'warning')
  */
 function mostrarNotificacion(mensaje, tipo = 'success') {
-    // Crear contenedor de notificación si no existe
-    let notificacion = document.querySelector('.notification');
-    
-    if (!notificacion) {
-        notificacion = document.createElement('div');
-        notificacion.classList.add('notification');
-        document.body.appendChild(notificacion);
-    }
-    
-    // Crear elemento de notificación
-    const notificacionItem = document.createElement('div');
-    notificacionItem.classList.add('notification-item', `notification-${tipo}`);
-    
-    // Añadir icono según tipo
-    let icono = 'check-circle';
-    if (tipo === 'error') icono = 'exclamation-circle';
-    if (tipo === 'warning') icono = 'exclamation-triangle';
-    
-    notificacionItem.innerHTML = `
-        <i class="fas fa-${icono}"></i>
-        <span>${mensaje}</span>
-        <button class="notification-close">&times;</button>
-    `;
-    
-    // Añadir al contenedor y mostrar
-    notificacion.appendChild(notificacionItem);
-    
-    // Configurar event listener para cerrar
-    notificacionItem.querySelector('.notification-close').addEventListener('click', () => {
-        notificacionItem.classList.add('notification-hide');
-        setTimeout(() => {
-            notificacionItem.remove();
-        }, 300);
-    });
-    
-    // Auto-cerrar después de 5 segundos
-    setTimeout(() => {
-        if (notificacionItem.parentNode) {
+    try {
+        // Crear contenedor de notificación si no existe
+        let notificacion = document.querySelector('.notification');
+        
+        if (!notificacion) {
+            notificacion = document.createElement('div');
+            notificacion.classList.add('notification');
+            document.body.appendChild(notificacion);
+        }
+        
+        // Crear elemento de notificación
+        const notificacionItem = document.createElement('div');
+        notificacionItem.classList.add('notification-item', `notification-${tipo}`);
+        
+        // Añadir icono según tipo
+        let icono = 'check-circle';
+        if (tipo === 'error') icono = 'exclamation-circle';
+        if (tipo === 'warning') icono = 'exclamation-triangle';
+        
+        notificacionItem.innerHTML = `
+            <i class="fas fa-${icono}"></i>
+            <span>${mensaje}</span>
+            <button class="notification-close">&times;</button>
+        `;
+        
+        // Añadir al contenedor y mostrar
+        notificacion.appendChild(notificacionItem);
+        
+        // Configurar event listener para cerrar
+        notificacionItem.querySelector('.notification-close').addEventListener('click', () => {
             notificacionItem.classList.add('notification-hide');
             setTimeout(() => {
-                notificacionItem.remove();
+                if (notificacionItem.parentNode) {
+                    notificacionItem.remove();
+                }
             }, 300);
-        }
-    }, 5000);
+        });
+        
+        // Auto-cerrar después de 5 segundos
+        setTimeout(() => {
+            if (notificacionItem && notificacionItem.parentNode) {
+                notificacionItem.classList.add('notification-hide');
+                setTimeout(() => {
+                    if (notificacionItem.parentNode) {
+                        notificacionItem.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    } catch (error) {
+        console.error("Error al mostrar notificación:", error);
+        // Fallback a alert en caso de error
+        alert(`${tipo.toUpperCase()}: ${mensaje}`);
+    }
 }
 });
