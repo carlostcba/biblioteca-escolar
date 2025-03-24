@@ -1,0 +1,285 @@
+/* public/css/index.css - Estilos específicos para la página de inicio */
+
+/* Hero section con fondo y animación mejorados */
+.hero {
+    background: linear-gradient(135deg, var(--primary-light) 0%, #d9e6ff 100%);
+    border-radius: 12px;
+    padding: 3.5rem 2rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/pattern-dots.svg');
+    background-size: 20px;
+    opacity: 0.15;
+    z-index: 0;
+  }
+  
+  .hero h2 {
+    margin-bottom: 1.2rem;
+    font-size: 2.5rem;
+    color: var(--primary-dark);
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+  }
+  
+  .hero p {
+    font-size: 1.25rem;
+    color: var(--gray-color);
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .hero-buttons .btn {
+    padding: 0.8rem 1.8rem;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    min-width: 180px;
+  }
+  
+  .hero-buttons .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Features section con mejoras visuales */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+  
+  .feature-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  }
+  
+  .feature-card:hover::after {
+    transform: scaleX(1);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    background-color: var(--primary-light);
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  
+  .feature-card:hover .feature-icon {
+    background-color: var(--primary-color);
+    color: white;
+    transform: rotateY(180deg);
+  }
+  
+  .feature-card h3 {
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+    font-size: 1.3rem;
+  }
+  
+  .feature-card p {
+    color: var(--gray-color);
+    line-height: 1.6;
+  }
+  
+  /* Admin and Librarian sections */
+  .admin-section, .bibliotecario-section {
+    background-color: #f9fafc;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.8s ease-in-out;
+  }
+  
+  .admin-section h2, .bibliotecario-section h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--primary-dark);
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .admin-section h2::after, .bibliotecario-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+  }
+  
+  .admin-tools, .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .tool-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tool-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1.25rem;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+  
+  .tool-card:hover .tool-icon {
+    transform: scale(1.2);
+  }
+  
+  .tool-card h3 {
+    margin-bottom: 0.75rem;
+    color: var(--dark-color);
+  }
+  
+  .tool-card p {
+    color: var(--gray-color);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .tool-card .btn {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+  }
+  
+  .tool-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Animaciones */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Ajustes responsive */
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 1.5rem;
+    }
+    
+    .hero h2 {
+      font-size: 2rem;
+    }
+    
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .hero-buttons .btn {
+      width: 100%;
+      min-width: 0;
+      max-width: 300px;
+    }
+    
+    .admin-tools, .tools-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .hero h2 {
+      font-size: 1.75rem;
+    }
+    
+    .hero p {
+      font-size: 1.1rem;
+    }
+    
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      line-height: 70px;
+      font-size: 2rem;
+    }
+  }
+  
+  /* Transiciones suaves para los elementos que aparecen/desaparecen */
+  .role-specific {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .role-specific.hidden {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+  }
