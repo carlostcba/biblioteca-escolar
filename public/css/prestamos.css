@@ -12,6 +12,14 @@
     --success-color: #48bb78;
     --danger-color: #e53e3e;
     --warning-color: #ecc94b;
+    
+    /* Colores diferenciadores añadidos para consistencia con mis-reservas.css */
+    --prestamo-bg: #f0fff4;
+    --prestamo-border: #c6f6d5;
+    --vencido-bg: #fff5f5;
+    --vencido-border: #fed7d7;
+    --devuelto-bg: #f7fafc;
+    --devuelto-border: #e2e8f0;
 }
 
 /* Estilos para las pestañas */
@@ -111,9 +119,9 @@
     gap: 1rem;
 }
 
-/* Tarjeta de préstamo */
+/* Tarjeta de préstamo rediseñada para que coincida con mis-reservas.css */
 .prestamo-card {
-    background-color: var(--white-color);
+    background-color: var(--prestamo-bg);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
@@ -121,6 +129,8 @@
     flex-direction: row;
     justify-content: space-between;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid var(--prestamo-border);
+    position: relative;
 }
 
 .prestamo-card:hover {
@@ -128,40 +138,94 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
+/* Diferentes estilos según el estado del préstamo */
+.prestamo-card.estado-activo {
+    background-color: var(--prestamo-bg);
+    border-left-color: var(--prestamo-border);
+}
+
+.prestamo-card.estado-vencido {
+    background-color: var(--vencido-bg);
+    border-left-color: var(--vencido-border);
+}
+
+.prestamo-card.estado-devuelto {
+    background-color: var(--devuelto-bg);
+    border-left-color: var(--devuelto-border);
+}
+
+/* Añadir iconos para mejorar la identificación visual */
+.prestamo-card::before {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    opacity: 0.7;
+    content: '\f02d'; /* Icono de libro */
+    color: var(--success-color);
+}
+
+.prestamo-card.estado-vencido::before {
+    content: '\f071'; /* Icono de advertencia */
+    color: var(--danger-color);
+}
+
+.prestamo-card.estado-devuelto::before {
+    content: '\f058'; /* Icono de check-circle */
+    color: var(--gray-color);
+}
+
+/* Información principal del préstamo */
 .prestamo-info {
-    flex: 1;
+    flex: 2;
+    display: flex;
+    flex-direction: column;
 }
 
 .prestamo-titulo {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--dark-color);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.3rem 0;
 }
 
 .prestamo-usuario {
     font-size: 0.95rem;
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
+    color: var(--gray-color);
 }
 
+/* Nuevos estilos para separar información de fechas */
 .prestamo-fechas {
     display: flex;
     gap: 1.5rem;
     font-size: 0.9rem;
     color: var(--gray-color);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
-.prestamo-estado {
-    margin-top: 0.5rem;
-}
-
-.prestamo-acciones {
+.fecha-grupo {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    justify-content: center;
-    min-width: 120px;
+}
+
+.fecha-etiqueta {
+    font-size: 0.75rem;
+    color: var(--gray-color);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.fecha-valor {
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+/* Nuevo estilo para el estado del préstamo */
+.prestamo-estado {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
 }
 
 /* Estilos para badges de estado */
@@ -175,13 +239,13 @@
 }
 
 .status-active {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
+    background-color: #c6f6d5;
+    color: #2f855a;
 }
 
 .status-overdue {
     background-color: #fed7d7;
-    color: var(--danger-color);
+    color: #c53030;
 }
 
 .status-returned {
@@ -197,6 +261,31 @@
 .status-damaged {
     background-color: #fbd5d5;
     color: #9b2c2c;
+}
+
+/* Plazo de devolución */
+.plazo-normal {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.vence-pronto {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.vencido {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Acciones del préstamo */
+.prestamo-acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    justify-content: center;
+    min-width: 120px;
 }
 
 /* Estilos para botones */
@@ -303,9 +392,10 @@
 }
 
 .no-results i {
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: var(--primary-color);
     margin-bottom: 0.75rem;
+    opacity: 0.7;
 }
 
 .no-results p {
@@ -409,7 +499,7 @@
     padding: 1.5rem;
 }
 
-.modal-footer {
+.modal-actions {
     padding: 1rem 1.5rem;
     background-color: #f9fafb;
     border-top: 1px solid var(--light-gray);
@@ -475,6 +565,53 @@
     resize: vertical;
 }
 
+/* Búsqueda y selección de usuario/libro */
+.search-select {
+    position: relative;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid var(--light-gray);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--light-gray);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-item:hover {
+    background-color: var(--primary-light);
+}
+
+.search-item:last-child {
+    border-bottom: none;
+}
+
+.selected-item {
+    background-color: var(--primary-light);
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--primary-color);
+}
+
 /* Notificaciones */
 .notification {
     position: fixed;
@@ -496,6 +633,19 @@
     align-items: center;
     animation: slide-in 0.3s ease-out;
     transition: transform 0.3s, opacity 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.notification-success {
+    border-left-color: var(--success-color);
+}
+
+.notification-error {
+    border-left-color: var(--danger-color);
+}
+
+.notification-warning {
+    border-left-color: var(--warning-color);
 }
 
 .notification-item.notification-hide {
@@ -551,6 +701,7 @@
         margin-top: 1rem;
         justify-content: flex-start;
         min-width: auto;
+        width: 100%;
     }
     
     .filter-bar {

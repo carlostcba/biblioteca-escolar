@@ -1,4 +1,3 @@
-// js/prestamos.js
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Prestamos.js loaded, checking authentication");
     
@@ -10,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar si el usuario tiene permisos de admin o bibliotecario
-    if (!window.AuthService.isAdmin()) {
+    if (!window.AuthService.isAdmin() && !window.AuthService.hasRole('bibliotecario')) {
         console.log("User does not have admin privileges, redirecting");
         window.location.href = '/acceso-denegado.html';
         return;
@@ -147,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const prestamoElement = document.createElement('div');
                 prestamoElement.classList.add('prestamo-card');
+                prestamoElement.classList.add(`estado-${estado.toLowerCase()}`);
                 
                 // Determinar clase de estado
                 let estadoClass = '';
@@ -168,12 +168,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="prestamo-info">
                         <h3 class="prestamo-titulo">${libro.Titulo || libro.titulo || "Título no disponible"}</h3>
                         <p class="prestamo-usuario">Usuario: ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                        <div class="prestamo-fechas">
+                            <div class="fecha-grupo">
+                                <span class="fecha-etiqueta">Préstamo</span>
+                                <span class="fecha-valor">${fechaPrestamo}</span>
+                            </div>
+                            <div class="fecha-grupo">
+                                <span class="fecha-etiqueta">Devolución</span>
+                                <span class="fecha-valor">${fechaDevolucion}</span>
+                            </div>
+                        </div>
                         <p>Autor: ${autor.Nombre || autor.nombre || ""} ${autor.Apellido || autor.apellido || ""}</p>
                         <p>Ejemplar: ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "N/A"}</p>
-                        <p class="prestamo-fechas">
-                            <span>Préstamo: ${fechaPrestamo}</span>
-                            <span>Devolución: ${fechaDevolucion}</span>
-                        </p>
                         <div class="prestamo-estado">
                             <span class="status-badge ${estadoClass}">${estado}</span>
                         </div>
@@ -307,429 +313,429 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hacer scroll al inicio del contenedor
         prestamosContainer.scrollIntoView({ behavior: 'smooth' });
     }
+    
     /**
- * Abre el modal para realizar un nuevo préstamo
- */
-function abrirModalNuevoPrestamo() {
-    // Obtener el modal
-    const modalNuevoPrestamo = document.getElementById('modal-nuevo-prestamo');
-    
-    // Mostrar el modal
-    modalNuevoPrestamo.classList.remove('hidden');
-    
-    // Limpiar campos del formulario si existen
-    const form = modalNuevoPrestamo.querySelector('form');
-    if (form) form.reset();
-    
-    // Configurar event listeners para cerrar modal
-    const closeButtons = modalNuevoPrestamo.querySelectorAll('.modal-close, .btn-cancelar');
-    closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modalNuevoPrestamo.classList.add('hidden');
-        });
-    });
-    
-    // Configurar event listener para el formulario
-    if (form) {
-        form.removeEventListener('submit', procesarNuevoPrestamo);
-        form.addEventListener('submit', procesarNuevoPrestamo);
-    }
-}
-
-/**
- * Abre el modal para registrar una devolución
- * @param {string} prestamoId - ID del préstamo a devolver (opcional)
- */
-function abrirModalDevolucion(prestamoId = null) {
-    // Obtener el modal
-    const modalDevolucion = document.getElementById('modal-devolucion');
-    
-    // Mostrar el modal
-    modalDevolucion.classList.remove('hidden');
-    
-    // Si se proporcionó un ID de préstamo, cargar sus datos
-    if (prestamoId) {
-        const inputPrestamoId = modalDevolucion.querySelector('#prestamo-id');
-        if (inputPrestamoId) inputPrestamoId.value = prestamoId;
-        
-        // Cargar información del préstamo
-        cargarInfoPrestamo(prestamoId);
-    } else {
-        // Limpiar campos del formulario si existen
-        const form = modalDevolucion.querySelector('form');
-        if (form) form.reset();
-    }
-    
-    // Configurar event listeners para cerrar modal
-    const closeButtons = modalDevolucion.querySelectorAll('.modal-close, .btn-cancelar');
-    closeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            modalDevolucion.classList.add('hidden');
-        });
-    });
-    
-    // Configurar event listener para el formulario
-    const form = modalDevolucion.querySelector('form');
-    if (form) {
-        form.removeEventListener('submit', procesarDevolucion);
-        form.addEventListener('submit', procesarDevolucion);
-    }
-}
-
-/**
- * Carga la información de un préstamo para el modal de devolución
- * @param {string} prestamoId - ID del préstamo
- */
-async function cargarInfoPrestamo(prestamoId) {
-    try {
-        const response = await fetch(`/api/prestamos/${prestamoId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) {
-            // Si el error es de autorización, cerrar sesión
-            if (response.status === 401 || response.status === 403) {
-                window.AuthService.logout();
-                return;
-            }
-            throw new Error('Error al cargar información del préstamo');
-        }
-        
-        const data = await response.json();
-        console.log("Información del préstamo:", data); // Para depuración
-        
-        // Adaptar acceso a las propiedades según la estructura real
-        const ejemplar = data.ejemplar || {};
-        const libro = ejemplar.libro || {};
-        const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
-        const estado = data.Estado || data.estado || "activo";
-        
-        // Rellenar la información en el modal
-        const modal = document.getElementById('modal-devolucion');
-        const infoContainer = modal.querySelector('.prestamo-info');
-        
-        if (infoContainer) {
-            const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
-            const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
-            
-            let estadoClass = '';
-            if (estado.toLowerCase() === 'vencido') {
-                estadoClass = 'status-overdue';
-            } else {
-                estadoClass = 'status-active';
-            }
-            
-            infoContainer.innerHTML = `
-                <p><strong>Libro:</strong> ${libro.Titulo || libro.titulo || "No disponible"}</p>
-                <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
-                <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
-                <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
-                <p><strong>Fecha de devolución:</strong> ${fechaDevolucion}</p>
-                <p><strong>Estado:</strong> <span class="status-badge ${estadoClass}">${estado}</span></p>
-            `;
-        }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        const modal = document.getElementById('modal-devolucion');
-        const infoContainer = modal.querySelector('.prestamo-info');
-        
-        if (infoContainer) {
-            infoContainer.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Error al cargar información del préstamo: ${error.message}</p>
-                </div>
-            `;
-        }
-    }
-}
-
-/**
- * Procesa el formulario de nuevo préstamo
- * @param {Event} event - Evento de submit
- */
-async function procesarNuevoPrestamo(event) {
-    event.preventDefault();
-    
-    // Obtener datos del formulario
-    const form = event.target;
-    const formData = new FormData(form);
-    const prestamo = Object.fromEntries(formData.entries());
-    
-    try {
-        // Guardar el texto original del botón
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Mostrar indicador de carga
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        
-        // Enviar datos al servidor
-        const response = await fetch('/api/prestamos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(prestamo)
-        });
-        
-        if (!response.ok) {
-            // Manejar error de autorización
-            if (response.status === 401 || response.status === 403) {
-                window.AuthService.logout();
-                return;
-            }
-            
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Error al procesar el préstamo');
-        }
-        
-        // Ocultar modal
-        document.getElementById('modal-nuevo-prestamo').classList.add('hidden');
-        
-        // Recargar préstamos
-        cargarPrestamos();
-        
-        // Mostrar mensaje de éxito
-        mostrarNotificacion('Préstamo registrado con éxito');
-        
-    } catch (error) {
-        console.error('Error:', error);
-        
-        // Mostrar mensaje de error en el formulario
-        const errorContainer = form.querySelector('.error-message') || document.createElement('div');
-        errorContainer.classList.add('error-message');
-        errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
-        
-        if (!form.querySelector('.error-message')) {
-            form.appendChild(errorContainer);
-        }
-        
-        // Restaurar botón
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText || 'Registrar Préstamo';
-    }
-}
-
-/**
- * Procesa el formulario de devolución de préstamo
- * @param {Event} event - Evento de submit
- */
-async function procesarDevolucion(event) {
-    event.preventDefault();
-    
-    // Obtener datos del formulario
-    const form = event.target;
-    const formData = new FormData(form);
-    const datos = Object.fromEntries(formData.entries());
-    
-    try {
-        // Guardar el texto original del botón
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Mostrar indicador de carga
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        
-        // Enviar datos al servidor
-        const response = await fetch(`/api/prestamos/${datos.prestamoId}/devolver`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                estado: datos.estado || 'devuelto',
-                observaciones: datos.observaciones || ''
-            })
-        });
-        
-        if (!response.ok) {
-            // Manejar error de autorización
-            if (response.status === 401 || response.status === 403) {
-                window.AuthService.logout();
-                return;
-            }
-            
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Error al procesar la devolución');
-        }
-        
-        // Ocultar modal
-        document.getElementById('modal-devolucion').classList.add('hidden');
-        
-        // Recargar préstamos
-        cargarPrestamos();
-        
-        // Mostrar mensaje de éxito
-        mostrarNotificacion('Devolución registrada con éxito');
-        
-    } catch (error) {
-        console.error('Error:', error);
-        
-        // Mostrar mensaje de error en el formulario
-        const errorContainer = form.querySelector('.error-message') || document.createElement('div');
-        errorContainer.classList.add('error-message');
-        errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
-        
-        if (!form.querySelector('.error-message')) {
-            form.appendChild(errorContainer);
-        }
-        
-        // Restaurar botón
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText || 'Registrar Devolución';
-    }
-}
-
-/**
- * Ver detalles de un préstamo específico
- * @param {string} prestamoId - ID del préstamo
- */
-async function verDetallesPrestamo(prestamoId) {
-    try {
-        const response = await fetch(`/api/prestamos/${prestamoId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) {
-            // Manejar error de autorización
-            if (response.status === 401 || response.status === 403) {
-                window.AuthService.logout();
-                return;
-            }
-            throw new Error('Error al cargar detalles del préstamo');
-        }
-        
-        const data = await response.json();
-        console.log("Detalles del préstamo:", data); // Para depuración
-        
-        // Adaptar acceso a las propiedades según la estructura real
-        const ejemplar = data.ejemplar || {};
-        const libro = ejemplar.libro || {};
-        const autor = libro.autor || {};
-        const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
-        const estado = data.Estado || data.estado || "activo";
-        
-        // Crear y mostrar un modal con los detalles
-        const modal = document.createElement('div');
-        modal.classList.add('modal');
-        modal.id = 'modal-detalles-prestamo';
-        
-        const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
-        const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
-        const fechaDevolucionReal = data.FechaDevolucionReal || data.fechaDevolucionReal 
-            ? new Date(data.FechaDevolucionReal || data.fechaDevolucionReal).toLocaleDateString() 
-            : 'No devuelto';
-        
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Detalles del Préstamo</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="detalles-prestamo">
-                        <h4>${libro.Titulo || libro.titulo || "Título no disponible"}</h4>
-                        <p><strong>Autor:</strong> ${autor.Nombre || autor.nombre || ""} ${autor.Apellido || autor.apellido || ""}</p>
-                        <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
-                        <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
-                        <p><strong>Tipo de usuario:</strong> ${usuario.tipo_usuario || usuario.tipoUsuario || "No disponible"}</p>
-                        <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
-                        <p><strong>Fecha de devolución esperada:</strong> ${fechaDevolucion}</p>
-                        <p><strong>Fecha de devolución real:</strong> ${fechaDevolucionReal}</p>
-                        <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estado)}">${estado}</span></p>
-                        ${data.Notas || data.notas ? `<p><strong>Observaciones:</strong> ${data.Notas || data.notas}</p>` : ''}
-                        ${data.multa ? `
-                            <div class="multa-info">
-                                <p><strong>Multa:</strong> $${(data.multa.monto || data.MultaImporte || 0).toFixed(2)}</p>
-                                <p><strong>Estado de multa:</strong> ${data.multa.pagada || data.MultaPagada ? 'Pagada' : 'Pendiente'}</p>
-                                ${data.multa.fechaPago ? `<p><strong>Fecha de pago:</strong> ${new Date(data.multa.fechaPago).toLocaleDateString()}</p>` : ''}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary modal-close">Cerrar</button>
-                    ${['activo', 'vencido', 'Activo', 'Vencido'].includes(estado) ? 
-                        `<button class="btn btn-primary btn-devolver-detalle" data-id="${data.PrestamoID || data.prestamoID || data.id}">Registrar Devolución</button>` : ''}
-                </div>
-            </div>
-        `;
-        
-        // Añadir el modal al DOM
-        document.body.appendChild(modal);
+     * Abre el modal para realizar un nuevo préstamo
+     */
+    function abrirModalNuevoPrestamo() {
+        // Obtener el modal
+        const modalNuevoPrestamo = document.getElementById('modal-nuevo-prestamo');
         
         // Mostrar el modal
-        setTimeout(() => {
-            modal.classList.add('show');
-        }, 10);
+        modalNuevoPrestamo.classList.remove('hidden');
+        
+        // Limpiar campos del formulario si existen
+        const form = modalNuevoPrestamo.querySelector('form');
+        if (form) form.reset();
         
         // Configurar event listeners para cerrar modal
-        modal.querySelectorAll('.modal-close').forEach(btn => {
+        const closeButtons = modalNuevoPrestamo.querySelectorAll('.modal-close, .btn-cancelar');
+        closeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                modal.classList.remove('show');
-                setTimeout(() => {
-                    modal.remove();
-                }, 300);
+                modalNuevoPrestamo.classList.add('hidden');
             });
         });
         
-        // Configurar event listener para botón de devolución
-        const btnDevolver = modal.querySelector('.btn-devolver-detalle');
-        if (btnDevolver) {
-            btnDevolver.addEventListener('click', () => {
-                modal.classList.remove('show');
-                setTimeout(() => {
-                    modal.remove();
-                    abrirModalDevolucion(prestamoId);
-                }, 300);
-            });
+        // Configurar event listener para el formulario
+        if (form) {
+            form.removeEventListener('submit', procesarNuevoPrestamo);
+            form.addEventListener('submit', procesarNuevoPrestamo);
+        }
+    }
+
+    /**
+     * Abre el modal para registrar una devolución
+     * @param {string} prestamoId - ID del préstamo a devolver (opcional)
+     */
+    function abrirModalDevolucion(prestamoId = null) {
+        // Obtener el modal
+        const modalDevolucion = document.getElementById('modal-devolucion');
+        
+        // Mostrar el modal
+        modalDevolucion.classList.remove('hidden');
+        
+        // Si se proporcionó un ID de préstamo, cargar sus datos
+        if (prestamoId) {
+            const inputPrestamoId = modalDevolucion.querySelector('#prestamo-id');
+            if (inputPrestamoId) inputPrestamoId.value = prestamoId;
+            
+            // Cargar información del préstamo
+            cargarInfoPrestamo(prestamoId);
+        } else {
+            // Limpiar campos del formulario si existen
+            const form = modalDevolucion.querySelector('form');
+            if (form) form.reset();
         }
         
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al cargar detalles del préstamo: ' + error.message, 'error');
+        // Configurar event listeners para cerrar modal
+        const closeButtons = modalDevolucion.querySelectorAll('.modal-close, .btn-cancelar');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalDevolucion.classList.add('hidden');
+            });
+        });
+        
+        // Configurar event listener para el formulario
+        const form = modalDevolucion.querySelector('form');
+        if (form) {
+            form.removeEventListener('submit', procesarDevolucion);
+            form.addEventListener('submit', procesarDevolucion);
+        }
     }
-}
 
-/**
- * Obtiene la clase CSS para el estado de un préstamo
- * @param {string} estado - Estado del préstamo
- * @returns {string} - Clase CSS correspondiente
- */
-function getEstadoClass(estado) {
-    switch (estado.toLowerCase()) {
-        case 'activo':
-            return 'status-active';
-        case 'vencido':
-            return 'status-overdue';
-        case 'devuelto':
-            return 'status-returned';
-        case 'perdido':
-            return 'status-lost';
-        case 'dañado':
-            return 'status-damaged';
-        default:
-            return '';
+    /**
+     * Carga la información de un préstamo para el modal de devolución
+     * @param {string} prestamoId - ID del préstamo
+     */
+    async function cargarInfoPrestamo(prestamoId) {
+        try {
+            const response = await fetch(`/api/prestamos/${prestamoId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                // Si el error es de autorización, cerrar sesión
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                throw new Error('Error al cargar información del préstamo');
+            }
+            
+            const data = await response.json();
+            console.log("Información del préstamo:", data); // Para depuración
+            
+            // Adaptar acceso a las propiedades según la estructura real
+            const ejemplar = data.ejemplar || {};
+            const libro = ejemplar.libro || {};
+            const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
+            const estado = data.Estado || data.estado || "activo";
+            
+            // Rellenar la información en el modal
+            const modal = document.getElementById('modal-devolucion');
+            const infoContainer = modal.querySelector('.prestamo-info');
+            
+            if (infoContainer) {
+                const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
+                const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
+                
+                let estadoClass = '';
+                if (estado.toLowerCase() === 'vencido') {
+                    estadoClass = 'status-overdue';
+                } else {
+                    estadoClass = 'status-active';
+                }
+                
+                infoContainer.innerHTML = `
+                    <p><strong>Libro:</strong> ${libro.Titulo || libro.titulo || "No disponible"}</p>
+                    <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                    <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
+                    <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
+                    <p><strong>Fecha de devolución:</strong> ${fechaDevolucion}</p>
+                    <p><strong>Estado:</strong> <span class="status-badge ${estadoClass}">${estado}</span></p>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            const modal = document.getElementById('modal-devolucion');
+            const infoContainer = modal.querySelector('.prestamo-info');
+            
+            if (infoContainer) {
+                infoContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error al cargar información del préstamo: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
     }
-}
 
-/**
- * Muestra una notificación en pantalla
- * @param {string} mensaje - Mensaje a mostrar
- * @param {string} tipo - Tipo de notificación ('success', 'error', 'warning')
- */
+    /**
+     * Procesa el formulario de nuevo préstamo
+     * @param {Event} event - Evento de submit
+     */
+    async function procesarNuevoPrestamo(event) {
+        event.preventDefault();
+        
+        // Obtener datos del formulario
+        const form = event.target;
+        const formData = new FormData(form);
+        const prestamo = Object.fromEntries(formData.entries());
+        
+        try {
+            // Guardar el texto original del botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar indicador de carga
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            
+            // Enviar datos al servidor
+            const response = await fetch('/api/prestamos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(prestamo)
+            });
+            
+            if (!response.ok) {
+                // Manejar error de autorización
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al procesar el préstamo');
+            }
+            
+            // Ocultar modal
+            document.getElementById('modal-nuevo-prestamo').classList.add('hidden');
+            
+            // Recargar préstamos
+            cargarPrestamos();
+            
+            // Mostrar mensaje de éxito
+            mostrarNotificacion('Préstamo registrado con éxito');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            
+            // Mostrar mensaje de error en el formulario
+            const errorContainer = form.querySelector('.error-message') || document.createElement('div');
+            errorContainer.classList.add('error-message');
+            errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+            
+            if (!form.querySelector('.error-message')) {
+                form.appendChild(errorContainer);
+            }
+            
+            // Restaurar botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText || 'Registrar Préstamo';
+        }
+    }
+
+    /**
+     * Procesa el formulario de devolución de préstamo
+     * @param {Event} event - Evento de submit
+     */
+    async function procesarDevolucion(event) {
+        event.preventDefault();
+        
+        // Obtener datos del formulario
+        const form = event.target;
+        const formData = new FormData(form);
+        const datos = Object.fromEntries(formData.entries());
+        
+        try {
+            // Guardar el texto original del botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar indicador de carga
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            
+            // Enviar datos al servidor
+            const response = await fetch(`/api/prestamos/${datos.prestamoId}/devolver`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    estado: datos.estado || 'devuelto',
+                    observaciones: datos.observaciones || ''
+                })
+            });
+            
+            if (!response.ok) {
+                // Manejar error de autorización
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al procesar la devolución');
+            }
+            
+            // Ocultar modal
+            document.getElementById('modal-devolucion').classList.add('hidden');
+            
+            // Recargar préstamos
+            cargarPrestamos();
+            
+            // Mostrar mensaje de éxito
+            mostrarNotificacion('Devolución registrada con éxito');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            
+            // Mostrar mensaje de error en el formulario
+            const errorContainer = form.querySelector('.error-message') || document.createElement('div');
+            errorContainer.classList.add('error-message');
+            errorContainer.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+            
+            if (!form.querySelector('.error-message')) {
+                form.appendChild(errorContainer);
+            }
+            
+            // Restaurar botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText || 'Registrar Devolución';
+        }
+    }
+
+    /**
+     * Ver detalles de un préstamo específico
+     * @param {string} prestamoId - ID del préstamo
+     */
+    async function verDetallesPrestamo(prestamoId) {
+        try {
+            const response = await fetch(`/api/prestamos/${prestamoId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                // Manejar error de autorización
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                throw new Error('Error al cargar detalles del préstamo');
+            }
+            
+            const data = await response.json();
+            console.log("Detalles del préstamo:", data); // Para depuración
+            
+            // Adaptar acceso a las propiedades según la estructura real
+            const ejemplar = data.ejemplar || {};
+            const libro = ejemplar.libro || {};
+            const autor = libro.autor || {};
+            const usuario = data.usuario || { nombre: "Usuario", apellido: "Desconocido" };
+            const estado = data.Estado || data.estado || "activo";
+            
+            // Crear y mostrar un modal con los detalles
+            const modal = document.createElement('div');
+            modal.classList.add('modal');
+            modal.id = 'modal-detalles-prestamo';
+            
+            const fechaPrestamo = new Date(data.FechaPrestamo || data.fechaPrestamo).toLocaleDateString();
+            const fechaDevolucion = new Date(data.FechaDevolucion || data.fechaDevolucion).toLocaleDateString();
+            const fechaDevolucionReal = data.FechaDevolucionReal || data.fechaDevolucionReal 
+                ? new Date(data.FechaDevolucionReal || data.fechaDevolucionReal).toLocaleDateString() 
+                : 'No devuelto';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Detalles del Préstamo</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detalles-prestamo">
+                            <h4>${libro.Titulo || libro.titulo || "Título no disponible"}</h4>
+                            <p><strong>Autor:</strong> ${autor.Nombre || autor.nombre || ""} ${autor.Apellido || autor.apellido || ""}</p>
+                            <p><strong>Ejemplar:</strong> ${ejemplar.CodigoBarras || ejemplar.codigoBarras || "No disponible"}</p>
+                            <p><strong>Usuario:</strong> ${usuario.nombre || ""} ${usuario.apellido || ""}</p>
+                            <p><strong>Tipo de usuario:</strong> ${usuario.tipo_usuario || usuario.tipoUsuario || "No disponible"}</p>
+                            <p><strong>Fecha de préstamo:</strong> ${fechaPrestamo}</p>
+                            <p><strong>Fecha de devolución esperada:</strong> ${fechaDevolucion}</p>
+                            <p><strong>Fecha de devolución real:</strong> ${fechaDevolucionReal}</p>
+                            <p><strong>Estado:</strong> <span class="status-badge ${getEstadoClass(estado)}">${estado}</span></p>
+                            ${data.Notas || data.notas ? `<p><strong>Observaciones:</strong> ${data.Notas || data.notas}</p>` : ''}
+                            ${data.multa ? `
+                                <div class="multa-info">
+                                    <p><strong>Multa:</strong> $${(data.multa.monto || data.MultaImporte || 0).toFixed(2)}</p>
+                                    <p><strong>Estado de multa:</strong> ${data.multa.pagada || data.MultaPagada ? 'Pagada' : 'Pendiente'}</p>
+                                    ${data.multa.fechaPago ? `<p><strong>Fecha de pago:</strong> ${new Date(data.multa.fechaPago).toLocaleDateString()}</p>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary modal-close">Cerrar</button>
+                        ${['activo', 'vencido', 'Activo', 'Vencido'].includes(estado) ? 
+                            `<button class="btn btn-primary btn-devolver-detalle" data-id="${data.PrestamoID || data.prestamoID || data.id}">Registrar Devolución</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Añadir el modal al DOM
+            document.body.appendChild(modal);
+            
+            // Mostrar el modal
+            setTimeout(() => {
+                modal.classList.remove('hidden');
+            }, 10);
+            
+            // Configurar event listeners para cerrar modal
+            modal.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 300);
+                });
+            });
+            
+            // Configurar event listener para botón de devolución
+            const btnDevolver = modal.querySelector('.btn-devolver-detalle');
+            if (btnDevolver) {
+                btnDevolver.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                    setTimeout(() => {
+                        modal.remove();
+                        abrirModalDevolucion(prestamoId);
+                    }, 300);
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al cargar detalles del préstamo: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Obtiene la clase CSS para el estado de un préstamo
+     * @param {string} estado - Estado del préstamo
+     * @returns {string} - Clase CSS correspondiente
+     */
+    function getEstadoClass(estado) {
+        switch (estado.toLowerCase()) {
+            case 'activo':
+                return 'status-active';
+            case 'vencido':
+                return 'status-overdue';
+            case 'devuelto':
+                return 'status-returned';
+            case 'perdido':
+                return 'status-lost';
+            case 'dañado':
+                return 'status-damaged';
+            default:
+                return '';
+        }
+    }
+    /**
+* Muestra una notificación en pantalla
+* @param {string} mensaje - Mensaje a mostrar
+* @param {string} tipo - Tipo de notificación ('success', 'error', 'warning')
+*/
 function mostrarNotificacion(mensaje, tipo = 'success') {
     try {
         // Crear contenedor de notificación si no existe
@@ -785,5 +791,245 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
         // Fallback a alert en caso de error
         alert(`${tipo.toUpperCase()}: ${mensaje}`);
     }
-}
-});
+ }
+ 
+ /**
+ * Inicializa la búsqueda de usuarios para el formulario de préstamo
+ */
+ function inicializarBusquedaUsuarios() {
+    const searchUsuario = document.getElementById('buscar-usuario-prestamo');
+    const resultsUsuario = document.getElementById('resultados-usuario');
+    const selectedUsuario = document.getElementById('usuario-seleccionado');
+    const inputUsuarioId = document.getElementById('usuario-id');
+    
+    if (!searchUsuario) return;
+    
+    // Event listener para buscar usuarios mientras se escribe
+    searchUsuario.addEventListener('input', debounce(async function() {
+        const query = this.value.trim();
+        if (query.length < 3) {
+            resultsUsuario.innerHTML = '';
+            resultsUsuario.classList.remove('active');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/usuarios/buscar?query=${encodeURIComponent(query)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                throw new Error('Error al buscar usuarios');
+            }
+            
+            const usuarios = await response.json();
+            
+            // Mostrar resultados
+            resultsUsuario.innerHTML = '';
+            if (usuarios.length === 0) {
+                resultsUsuario.innerHTML = '<div class="search-item">No se encontraron resultados</div>';
+            } else {
+                usuarios.forEach(usuario => {
+                    const item = document.createElement('div');
+                    item.classList.add('search-item');
+                    item.innerHTML = `${usuario.nombre} ${usuario.apellido} (${usuario.tipo_usuario})`;
+                    item.addEventListener('click', () => {
+                        // Seleccionar usuario
+                        inputUsuarioId.value = usuario.id;
+                        searchUsuario.value = `${usuario.nombre} ${usuario.apellido}`;
+                        selectedUsuario.innerHTML = `
+                            <div>${usuario.nombre} ${usuario.apellido}</div>
+                            <div><small>${usuario.email}</small></div>
+                            <div><small>${usuario.tipo_usuario}</small></div>
+                        `;
+                        selectedUsuario.classList.remove('hidden');
+                        resultsUsuario.classList.remove('active');
+                    });
+                    resultsUsuario.appendChild(item);
+                });
+            }
+            
+            resultsUsuario.classList.add('active');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            resultsUsuario.innerHTML = `<div class="search-item error">Error: ${error.message}</div>`;
+            resultsUsuario.classList.add('active');
+        }
+    }, 300));
+    
+    // Ocultar resultados al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!searchUsuario.contains(e.target) && !resultsUsuario.contains(e.target)) {
+            resultsUsuario.classList.remove('active');
+        }
+    });
+ }
+ 
+ /**
+ * Inicializa la búsqueda de ejemplares para el formulario de préstamo
+ */
+ function inicializarBusquedaEjemplares() {
+    const searchEjemplar = document.getElementById('buscar-ejemplar');
+    const resultsEjemplar = document.getElementById('resultados-ejemplar');
+    const selectedEjemplar = document.getElementById('ejemplar-seleccionado');
+    const inputEjemplarId = document.getElementById('ejemplar-id');
+    
+    if (!searchEjemplar) return;
+    
+    // Event listener para buscar ejemplares mientras se escribe
+    searchEjemplar.addEventListener('input', debounce(async function() {
+        const query = this.value.trim();
+        if (query.length < 3) {
+            resultsEjemplar.innerHTML = '';
+            resultsEjemplar.classList.remove('active');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/ejemplares/buscar?query=${encodeURIComponent(query)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    window.AuthService.logout();
+                    return;
+                }
+                throw new Error('Error al buscar ejemplares');
+            }
+            
+            const ejemplares = await response.json();
+            
+            // Mostrar resultados
+            resultsEjemplar.innerHTML = '';
+            if (ejemplares.length === 0) {
+                resultsEjemplar.innerHTML = '<div class="search-item">No se encontraron resultados</div>';
+            } else {
+                ejemplares.forEach(ejemplar => {
+                    if (ejemplar.Estado === 'Disponible' || ejemplar.estado === 'Disponible') {
+                        const item = document.createElement('div');
+                        item.classList.add('search-item');
+                        
+                        const libro = ejemplar.libro || {};
+                        const titulo = libro.Titulo || libro.titulo || "Sin título";
+                        
+                        item.innerHTML = `${ejemplar.CodigoBarras || ejemplar.codigoBarras} - ${titulo}`;
+                        item.addEventListener('click', () => {
+                            // Seleccionar ejemplar
+                            inputEjemplarId.value = ejemplar.EjemplarID || ejemplar.ejemplarID || ejemplar.id;
+                            searchEjemplar.value = ejemplar.CodigoBarras || ejemplar.codigoBarras;
+                            selectedEjemplar.innerHTML = `
+                                <div><strong>${titulo}</strong></div>
+                                <div>Código: ${ejemplar.CodigoBarras || ejemplar.codigoBarras}</div>
+                                <div><small>Estado: ${ejemplar.Estado || ejemplar.estado}</small></div>
+                            `;
+                            selectedEjemplar.classList.remove('hidden');
+                            resultsEjemplar.classList.remove('active');
+                        });
+                        resultsEjemplar.appendChild(item);
+                    }
+                });
+                
+                // Si no hay ejemplares disponibles después de filtrar
+                if (resultsEjemplar.children.length === 0) {
+                    resultsEjemplar.innerHTML = '<div class="search-item">No hay ejemplares disponibles</div>';
+                }
+            }
+            
+            resultsEjemplar.classList.add('active');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            resultsEjemplar.innerHTML = `<div class="search-item error">Error: ${error.message}</div>`;
+            resultsEjemplar.classList.add('active');
+        }
+    }, 300));
+    
+    // Ocultar resultados al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!searchEjemplar.contains(e.target) && !resultsEjemplar.contains(e.target)) {
+            resultsEjemplar.classList.remove('active');
+        }
+    });
+ }
+ 
+ /**
+ * Función debounce para controlar la frecuencia de eventos
+ * @param {Function} func - Función a ejecutar
+ * @param {number} wait - Tiempo de espera en milisegundos
+ * @returns {Function} - Función con debounce
+ */
+ function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+ }
+ 
+ /**
+ * Inicializa la sección de plazos de devolución para el formulario de préstamo
+ */
+ function inicializarPlazoPrestamo() {
+    const tipoPrestamo = document.getElementById('tipo-prestamo');
+    const fechaDevolucion = document.getElementById('fecha-devolucion');
+    const diasPrestamo = document.getElementById('dias-prestamo');
+    
+    if (!tipoPrestamo || !fechaDevolucion || !diasPrestamo) return;
+    
+    tipoPrestamo.addEventListener('change', function() {
+        // Modificar días según el tipo de préstamo
+        if (this.value === 'normal') {
+            diasPrestamo.value = 7; // 7 días para préstamo normal
+        } else if (this.value === 'largo') {
+            diasPrestamo.value = 14; // 14 días para préstamo largo
+        } else if (this.value === 'corto') {
+            diasPrestamo.value = 3; // 3 días para préstamo corto
+        }
+        
+        // Actualizar fecha de devolución
+        actualizarFechaDevolucion();
+    });
+    
+    diasPrestamo.addEventListener('change', actualizarFechaDevolucion);
+    
+    // Actualizar fecha inicial
+    actualizarFechaDevolucion();
+    
+    function actualizarFechaDevolucion() {
+        const dias = parseInt(diasPrestamo.value) || 7;
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() + dias);
+        
+        // Formatear fecha para input date (YYYY-MM-DD)
+        const year = fecha.getFullYear();
+        const month = String(fecha.getMonth() + 1).padStart(2, '0');
+        const day = String(fecha.getDate()).padStart(2, '0');
+        
+        fechaDevolucion.value = `${year}-${month}-${day}`;
+    }
+ }
+ 
+ /**
+ * Inicializa todos los componentes interactivos
+ */
+ function inicializarComponentes() {
+    inicializarBusquedaUsuarios();
+    inicializarBusquedaEjemplares();
+    inicializarPlazoPrestamo();
+ }
+ 
+ // Inicializar componentes cuando el DOM esté listo
+ inicializarComponentes();
+ });
