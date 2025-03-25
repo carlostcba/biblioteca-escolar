@@ -113,35 +113,7 @@ exports.getEstadisticas = async (req, res) => {
     const hace30Dias = new Date(hoy);
     hace30Dias.setDate(hoy.getDate() - 30);
 
-    const librosMasPrestados = await db.Prestamo.findAll({
-      attributes: [
-        [db.sequelize.col('ejemplar.libro.LibroID'), 'libroId'],
-        [db.sequelize.col('ejemplar.libro.Titulo'), 'titulo'],
-        [db.sequelize.fn('COUNT', db.sequelize.col('PrestamoID')), 'total']
-      ],
-      include: [{
-        model: db.Ejemplar,
-        as: 'ejemplar',
-        attributes: [],
-        include: [{
-          model: db.Libro,
-          as: 'libro',
-          attributes: []
-        }]
-      }],
-      where: {
-        FechaCreacion: {
-          [Op.gte]: hace30Dias
-        }
-      },
-      group: ['ejemplar.libro.LibroID', 'ejemplar.libro.Titulo'],
-      order: [[db.sequelize.fn('COUNT', db.sequelize.col('PrestamoID')), 'DESC']],
-      limit: 5,
-      raw: true
-    }).catch(err => {
-      console.error('Error al obtener libros más prestados:', err);
-      return [];
-    });
+    
 
     // Tasa de devolución a tiempo (últimos 30 días)
     const prestamosCompletados = await db.Prestamo.count({
@@ -183,7 +155,6 @@ exports.getEstadisticas = async (req, res) => {
         totalEjemplares,
         porcentajeDisponibilidad: parseFloat(porcentajeDisponibilidad.toFixed(1)),
         reservasNuevasSemana: reservasNuevasEstaSemana,
-        librosMasPrestados,
         tasaDevolucionATiempo: parseFloat(tasaDevolucionATiempo.toFixed(1)),
         prestamosCompletados
       }
