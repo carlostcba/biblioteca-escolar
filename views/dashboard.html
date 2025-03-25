@@ -22,10 +22,10 @@
           <li class="user-only student-teacher-only hidden"><a href="/mis-reservas.html" id="nav-mis-reservas"><i class="fas fa-bookmark"></i> Mis Reservas</a></li>
           
           <!-- Navegación para bibliotecarios y administradores -->
-          <li class="bibliotecario-only hidden"><a href="/dashboard.html" id="nav-dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-          <li class="bibliotecario-only hidden"><a href="/prestamos.html" id="nav-prestamos"><i class="fas fa-exchange-alt"></i> Préstamos</a></li>
-          <li class="bibliotecario-only hidden"><a href="/reservas.html" id="nav-reservas"><i class="fas fa-clock"></i> Reservas</a></li>
-          <li class="bibliotecario-only hidden"><a href="/importar.html" id="nav-importar"><i class="fas fa-file-import"></i> Importar</a></li>
+          <li class="bibliotecario-only"><a href="/dashboard.html" id="nav-dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html" id="nav-prestamos"><i class="fas fa-exchange-alt"></i> Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html" id="nav-reservas"><i class="fas fa-clock"></i> Reservas</a></li>
+          <li class="bibliotecario-only"><a href="/importar.html" id="nav-importar"><i class="fas fa-file-import"></i> Importar</a></li>
           
           <!-- Navegación exclusiva para administradores -->
           <li class="admin-only hidden"><a href="/reportes.html" id="nav-reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
@@ -81,101 +81,28 @@
       </div>
     </div>
     
-    <div class="dashboard-grid">
-      <div class="panel">
-        <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
-        <ul id="actividad-reciente" class="activity-list">
-          <!-- Se llena dinámicamente -->
-          <li class="activity-item" data-type="prestamo">
-            <div class="activity-icon"><i class="fas fa-book"></i></div>
-            <div class="activity-content">
-              <div class="activity-title">Nuevo préstamo registrado</div>
-              <div class="activity-details">Ana García (4°B) - "El principito"</div>
-              <div class="activity-time">hace 15 minutos</div>
-            </div>
-          </li>
-          <li class="activity-item" data-type="devolucion">
-            <div class="activity-icon"><i class="fas fa-undo"></i></div>
-            <div class="activity-content">
-              <div class="activity-title">Devolución registrada</div>
-              <div class="activity-details">Carlos Rodríguez (5°A) - "Harry Potter y la piedra filosofal"</div>
-              <div class="activity-time">hace 45 minutos</div>
-            </div>
-          </li>
-          <li class="activity-item" data-type="reserva">
-            <div class="activity-icon"><i class="fas fa-bookmark"></i></div>
-            <div class="activity-content">
-              <div class="activity-title">Reserva lista para recoger</div>
-              <div class="activity-details">Laura Martínez (3°C) - "Cien años de soledad"</div>
-              <div class="activity-time">hace 2 horas</div>
-            </div>
-          </li>
-        </ul>
-      </div>
-      
-      <div class="panel">
-        <h3><i class="fas fa-chart-pie"></i> Distribución por Nivel</h3>
-        <div id="grafico-niveles" class="chart-container">
-          <div class="chart-placeholder">
-            <p>Distribución de préstamos por nivel educativo:</p>
-            
-            <div class="chart-bar-container">
-              <div class="chart-label">Primaria</div>
-              <div class="chart-bar-wrapper">
-                <div class="chart-bar primary" style="width: 0%">
-                  <span class="chart-value">45%</span></div>
-              </div>
-            </div>
-            
-            <div class="chart-bar-container">
-              <div class="chart-label">Secundaria Básica</div>
-              <div class="chart-bar-wrapper">
-                <div class="chart-bar secondary" style="width: 0%">
-                  <span class="chart-value">35%</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="chart-bar-container">
-              <div class="chart-label">Secundaria Técnica</div>
-              <div class="chart-bar-wrapper">
-                <div class="chart-bar tertiary" style="width: 0%">
-                  <span class="chart-value">20%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <div class="quick-actions">
-      <a href="/prestamos/nuevo" class="action-card">
-        <div class="action-icon"><i class="fas fa-book"></i></div>
-        <div class="action-title">Nuevo Préstamo</div>
-        <div class="action-desc">Registra un nuevo préstamo de libro</div>
+      <a href="/prestamos.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
+        <div class="action-title">Gestionar Préstamos</div>
+        <div class="action-desc">Visualiza y actualiza los préstamos</div>
       </a>
-      <a href="/devoluciones" class="action-card">
-        <div class="action-icon"><i class="fas fa-undo"></i></div>
-        <div class="action-title">Registrar Devolución</div>
-        <div class="action-desc">Procesa la devolución de un ejemplar</div>
-      </a>
-      <a href="/reservas" class="action-card">
+      <a href="/reservas.html" class="action-card">
         <div class="action-icon"><i class="fas fa-bookmark"></i></div>
         <div class="action-title">Gestionar Reservas</div>
         <div class="action-desc">Visualiza y actualiza las reservas</div>
       </a>
-      <a href="/reportes" class="action-card admin-only hidden">
+      <a href="/reportes.html" class="action-card admin-only hidden">
         <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
         <div class="action-title">Generar Reportes</div>
         <div class="action-desc">Estadísticas y reportes de uso</div>
       </a>
-      <a href="/perfiles" class="action-card admin-only hidden">
+      <a href="/perfiles.html" class="action-card admin-only hidden">
         <div class="action-icon"><i class="fas fa-users"></i></div>
         <div class="action-title">Gestionar Perfiles</div>
         <div class="action-desc">Administra usuarios y permisos</div>
       </a>
-      <a href="/inventario" class="action-card">
+      <a href="/inventario.html" class="action-card">
         <div class="action-icon"><i class="fas fa-clipboard-list"></i></div>
         <div class="action-title">Inventario</div>
         <div class="action-desc">Gestiona el inventario de ejemplares</div>

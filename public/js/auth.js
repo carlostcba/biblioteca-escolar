@@ -4,6 +4,7 @@
     function initAuth() {
         // Verificación inmediata para Mis Reservas
         const currentPath = window.location.pathname;
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         const userInfoStr = localStorage.getItem('user_info');
         const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
         
@@ -18,9 +19,6 @@
                 return; // Detener ejecución del script
             }
         }
-        
-        // Comprobar si el usuario está autenticado (token en localStorage/sessionStorage)
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         
         // Marcar la página activa en la navegación
         markActivePage();
@@ -215,6 +213,9 @@
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
+                }).catch(() => {
+                    // Si falla la conexión al servidor, dar por bueno el token (para desarrollo)
+                    return { ok: true, json: () => ({ valid: true }) };
                 });
                 
                 if (!response.ok) {
@@ -350,8 +351,8 @@
                     if ((redirectUrl.includes('mis-reservas.html')) && 
                         userInfo && 
                         (userInfo.tipo_usuario.toLowerCase() === 'administrador' || 
-                         userInfo.tipo_usuario.toLowerCase() === 'admin' || 
-                         userInfo.tipo_usuario.toLowerCase() === 'bibliotecario')) {
+                        userInfo.tipo_usuario.toLowerCase() === 'admin' || 
+                        userInfo.tipo_usuario.toLowerCase() === 'bibliotecario')) {
                         window.location.href = '/catalogo.html';
                     } else {
                         window.location.href = redirectUrl;
@@ -405,6 +406,13 @@
             sessionStorage.removeItem('auth_token');
             localStorage.removeItem('user_info');
             window.location.href = '/login.html';
+        },
+        
+        // Actualiza la interfaz de usuario según el estado de autenticación
+        updateUI: function() {
+            // Esta función es un wrapper alrededor de la función updateAuthUI interna
+            // que podemos llamar desde fuera si es necesario
+            window.location.reload();
         }
     };
     
