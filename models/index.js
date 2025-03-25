@@ -24,6 +24,7 @@ const db = {};
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
+db.Op = Sequelize.Op; // Añadir operadores de Sequelize para consultas avanzadas
 
 // Importar modelos existentes
 db.Autor = require('./autor.model')(sequelize, DataTypes);
@@ -209,5 +210,14 @@ db.Permiso.belongsToMany(db.Rol, {
   otherKey: 'rol_id',
   as: 'roles'
 });
+
+// Verificar conexión a la base de datos
+sequelize.authenticate()
+  .then(() => {
+    console.log('Conexión a la base de datos establecida correctamente.');
+  })
+  .catch(err => {
+    console.error('No se pudo conectar a la base de datos:', err);
+  });
 
 module.exports = db;
