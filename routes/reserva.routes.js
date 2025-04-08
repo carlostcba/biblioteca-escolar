@@ -28,4 +28,11 @@ router.put('/:id/estado', [authJwt.verifyToken], reservaController.cambiarEstado
 // Cancelar una reserva
 router.put('/:id/cancelar', [authJwt.verifyToken], reservaController.cancelar);
 
+// Procesar reservas completadas
+router.post(
+  "/procesar-completadas",
+  [authJwt.verifyToken, authJwt.isBibliotecario],
+  reservaController.convertirReservasCompletadasABulkPrestamos
+);
+
 module.exports = router;
