@@ -204,21 +204,23 @@ exports.obtenerPorId = async (req, res) => {
         {
           model: Ejemplar,
           as: 'ejemplar',
-          include: [
-            {
-              model: Libro,
-              as: 'libro',
-              include: [
-                {
-                  model: Autor,
-                  as: 'autor'
-                }
-              ]
-            }
-          ]
+          include: [{
+            model: Libro,
+            as: 'libro',
+            include: [{
+              model: Autor,
+              as: 'autor'
+            }]
+          }]
+        },
+        {
+          model: db.Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'apellido', 'email', 'tipo_usuario']
         }
       ]
     });
+    
 
     if (data) {
       res.send(data);

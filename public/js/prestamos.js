@@ -546,15 +546,15 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
             
             // Enviar datos al servidor
-            const response = await fetch(`/api/prestamos/${datos.prestamoId}/devolver`, {
+            const response = await fetch(`/api/prestamos/${datos.prestamoId}/devolucion`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    estado: datos.estado || 'devuelto',
-                    observaciones: datos.observaciones || ''
+                    Condicion: datos.condicion || 'Bueno',
+                    Notas: datos.notas || ''
                 })
             });
             
@@ -619,6 +619,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
+
+            // Prellenar campos del formulario de devolución
+            const form = document.querySelector('#modal-devolucion form');
+            if (form) {
+                const inputPrestamoId = form.querySelector('[name="prestamoId"]');
+                const inputCodigo = form.querySelector('[name="codigo"]');
+                const inputCondicion = form.querySelector('[name="condicion"]');
+                const inputNotas = form.querySelector('[name="notas"]');
+    
+                if (inputPrestamoId) inputPrestamoId.value = data.PrestamoID;
+                if (inputCodigo) inputCodigo.value = data.ejemplar?.CodigoBarras || '';
+                if (inputCondicion) inputCondicion.value = data.ejemplar?.Condicion || 'Bueno';
+                if (inputNotas) inputNotas.value = data.Notas || '';
+            }
+
+
             console.log("Detalles del préstamo:", data); // Para depuración
             
             // Adaptar acceso a las propiedades según la estructura real

@@ -152,12 +152,15 @@
       </div>
       <div class="modal-body">
         <form id="form-devolucion">
+          <!-- ID oculto del préstamo -->
+          <input type="hidden" name="prestamoId" id="prestamo-id" />
+  
           <div class="form-group">
             <label for="codigo-ejemplar">Código del ejemplar:</label>
-            <input type="text" id="codigo-ejemplar" name="codigo-ejemplar" placeholder="Escanea o ingresa el código..." required>
+            <input type="text" id="codigo-ejemplar" name="codigo" placeholder="Escanea o ingresa el código..." required>
           </div>
-          
-          <div id="info-prestamo" class="hidden">
+  
+          <div id="info-prestamo">
             <div class="prestamo-info">
               <p><strong>Libro:</strong> <span id="devolucion-libro"></span></p>
               <p><strong>Usuario:</strong> <span id="devolucion-usuario"></span></p>
@@ -166,29 +169,30 @@
               <p><strong>Estado:</strong> <span id="devolucion-estado"></span></p>
             </div>
           </div>
-          
+  
           <div class="form-group">
             <label for="condicion-ejemplar">Condición del ejemplar:</label>
-            <select id="condicion-ejemplar" name="condicion-ejemplar">
+            <select id="condicion-ejemplar" name="condicion">
               <option value="Bueno">Bueno</option>
               <option value="Regular">Regular</option>
               <option value="Deteriorado">Deteriorado</option>
               <option value="MuyDeteriorado">Muy Deteriorado</option>
             </select>
           </div>
-          
+  
           <div class="form-group">
             <label for="notas-devolucion">Notas:</label>
-            <textarea id="notas-devolucion" name="notas-devolucion" rows="3" placeholder="Observaciones sobre el estado del libro..."></textarea>
+            <textarea id="notas-devolucion" name="notas" rows="3" placeholder="Observaciones sobre el estado del libro..."></textarea>
           </div>
         </form>
       </div>
       <div class="modal-actions">
         <button id="btn-cancelar-devolucion" class="btn btn-secondary">Cancelar</button>
-        <button id="btn-confirmar-devolucion" class="btn btn-primary">Registrar Devolución</button>
+        <button id="btn-confirmar-devolucion" class="btn btn-primary" type="submit">Registrar Devolución</button>
       </div>
     </div>
   </div>
+  
   
   <footer>
     <div class="container">
