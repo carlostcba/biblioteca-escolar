@@ -348,6 +348,8 @@ document.addEventListener('DOMContentLoaded', function() {
      * @param {string} prestamoId - ID del préstamo a devolver (opcional)
      */
     function abrirModalDevolucion(prestamoId = null) {
+
+        console.log("✅ abrirModalDevolucion ejecutada");
         // Obtener el modal
         const modalDevolucion = document.getElementById('modal-devolucion');
         
@@ -368,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Configurar event listeners para cerrar modal
-        const closeButtons = modalDevolucion.querySelectorAll('.modal-close, .btn-cancelar');
+        const closeButtons = modalDevolucion.querySelectorAll('.modal-close, #btn-cancelar-devolucion');
         closeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 modalDevolucion.classList.add('hidden');
@@ -379,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const form = modalDevolucion.querySelector('form');
         if (form) {
             form.removeEventListener('submit', procesarDevolucion);
-            form.addEventListener('submit', procesarDevolucion);
+            form.addEventListener('submit', (e) => procesarDevolucion(e));
         }
     }
 
@@ -531,6 +533,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function procesarDevolucion(event) {
         event.preventDefault();
         
+        console.log("➡️ Se disparó el submit de devolución");
+
         // Obtener datos del formulario
         const form = event.target;
         const formData = new FormData(form);
@@ -547,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Enviar datos al servidor
             const response = await fetch(`/api/prestamos/${datos.prestamoId}/devolucion`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
