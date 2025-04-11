@@ -11,15 +11,33 @@
 <body>
   <header>
     <div class="container">
-      <h1>Biblioteca Escolar</h1>
+      <h1><i class="fas fa-book-reader"></i> Biblioteca Escolar</h1>
       <nav>
         <ul class="nav-left">
-          <li><a href="/">Inicio</a></li>
-          <li><a href="/catalogo.html">Catálogo</a></li>
-          <li class="bibliotecario-only hidden"><a href="/inventario.html">Inventario</a></li>
+          <!-- Navegación básica para todos los usuarios -->
+          <li><a href="/" id="nav-inicio"><i class="fas fa-home"></i> Inicio</a></li>
+          <li><a href="/catalogo.html" id="nav-catalogo"><i class="fas fa-book"></i> Catálogo</a></li>
+          
+          <!-- Navegación solo para alumnos y docentes -->
+          <li class="user-only student-teacher-only hidden"><a href="/mis-reservas.html" id="nav-mis-reservas"><i class="fas fa-bookmark"></i> Mis Reservas</a></li>
+          
+          <!-- Navegación para bibliotecarios y administradores -->
+          <li class="bibliotecario-only"><a href="/dashboard.html" id="nav-dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li class="bibliotecario-only"><a href="/prestamos.html" id="nav-prestamos"><i class="fas fa-exchange-alt"></i> Préstamos</a></li>
+          <li class="bibliotecario-only"><a href="/reservas.html" id="nav-reservas"><i class="fas fa-clock"></i> Reservas</a></li>
+          <li class="bibliotecario-only"><a href="/inventario.html" id="nav-importar" class="active"><i class="fas fa-book-open"></i> Inventario</a></li>
+          
+          <!-- Navegación exclusiva para administradores -->
+          <li class="admin-only hidden"><a href="/reportes.html" id="nav-reportes"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+          <li class="admin-only hidden"><a href="/perfiles.html" id="nav-perfiles"><i class="fas fa-users"></i> Perfiles</a></li>
+          <li class="admin-only hidden"><a href="/admin-usuarios.html" id="nav-usuarios"><i class="fas fa-user-cog"></i> Usuarios</a></li>
         </ul>
         <ul class="nav-right">
+          <!-- Opciones para usuarios no autenticados -->
           <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+          <li class="guest-only"><a href="/registro.html" class="btn-primary"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+          
+          <!-- Opciones para usuarios autenticados -->
           <li class="user-only hidden dropdown">
             <a href="#" class="dropdown-toggle" id="user-menu">
               <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
