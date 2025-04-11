@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let filtroLetraAutor = '';
   
   let paginaActual = 1;
-  const tamanioPagina = 10;
+  const tamanioPagina = 12;
   
   // Cargar categorías
   cargarCategorias();
