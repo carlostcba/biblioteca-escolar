@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const prestamosVencidos = document.getElementById('prestamos-vencidos');
     const ejemplaresDisponibles = document.getElementById('ejemplares-disponibles');
     const reservasPendientes = document.getElementById('reservas-pendientes');
+    const reservasListas = document.getElementById('reservas-listas');
     
     // Iniciar con loaders
     prestamosActivos.innerHTML = '<div class="loader-sm"></div>';
@@ -158,11 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 animateCounter(prestamosVencidos, data.prestamosVencidos);
                 animateCounter(ejemplaresDisponibles, data.ejemplaresDisponibles);
                 animateCounter(reservasPendientes, data.reservasPendientes);
+                animateCounter(reservasListas, data.reservasListas);
             } else {
                 prestamosActivos.textContent = data.prestamosActivos;
                 prestamosVencidos.textContent = data.prestamosVencidos;
                 ejemplaresDisponibles.textContent = data.ejemplaresDisponibles;
                 reservasPendientes.textContent = data.reservasPendientes;
+                reservasListas.textContent = data.reservasListas;
             }
             
             // Actualizar tendencias

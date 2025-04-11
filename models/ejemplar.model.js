@@ -71,5 +71,13 @@ module.exports = (sequelize, DataTypes) => {
     ejemplar.FechaActualizacion = sequelize.literal('GETDATE()');
   });
 
+  // Asociación con Libro
+  Ejemplar.associate = models => {
+    Ejemplar.belongsTo(models.Libro, {
+      as: 'libro',
+      foreignKey: 'LibroID'
+    });
+  };
+
   return Ejemplar;
 };

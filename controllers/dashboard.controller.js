@@ -108,6 +108,12 @@ exports.getEstadisticas = async (req, res) => {
       }
     });
 
+    // ===== RESERVAS LISTAS PARA RECOGER =====
+    const reservasListas = await db.Reserva.count({ 
+      where: { Estado: 'lista' } 
+    });
+
+
     // ===== ESTADÍSTICAS ADICIONALES =====
     // Top 5 libros más prestados (últimos 30 días)
     const hace30Dias = new Date(hoy);
@@ -147,6 +153,7 @@ exports.getEstadisticas = async (req, res) => {
       prestamosVencidos,
       ejemplaresDisponibles,
       reservasPendientes,
+      reservasListas,
       tendencias: {
         prestamosActivos: parseFloat(tendenciaPrestamos.toFixed(1)),
         prestamosVencidos: parseFloat(tendenciaVencidos.toFixed(1))

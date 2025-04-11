@@ -1,0 +1,144 @@
+/* Estilos para la página de inventario */
+
+.actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .inventario-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .inventario-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .inventario-item .info {
+    flex: 1;
+  }
+  
+  .inventario-item .acciones {
+    display: flex;
+    gap: 8px;
+  }
+  
+  /* Modales */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal.hidden {
+    display: none;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .modal-body input,
+  .modal-body textarea,
+  .modal-body select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  /* Botones */
+  .btn {
+    padding: 8px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    background-color: #4a6da7;
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3a5891;
+  }
+  
+  .btn-secondary {
+    background-color: #e2e8f0;
+    color: #2d3748;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #cbd5e0;
+  }
+  
+  .loader {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+  }
+  
+  .page-item {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .page-item.active {
+    background-color: #4a6da7;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .page-item.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  

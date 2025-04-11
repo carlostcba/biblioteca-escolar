@@ -13,6 +13,7 @@ const reservaRoutes = require('./reserva.routes');
 const prestamoRoutes = require('./prestamo.routes');
 const usuarioRoutes = require('./usuario.routes');
 const dashboardRoutes = require('./dashboard.routes');
+const inventarioRoutes = require('./inventario.routes');
 //const reporteRoutes = require('./reporte.routes');
 
 // Usar las rutas
@@ -26,6 +27,7 @@ router.use('/reservas', reservaRoutes);
 router.use('/prestamos', prestamoRoutes);
 router.use('/usuarios', usuarioRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/inventario', inventarioRoutes);
 //router.use('/reportes', reporteRoutes);
 
 // Ruta de verificación para la API

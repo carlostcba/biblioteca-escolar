@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario - Biblioteca Escolar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/inventario.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Biblioteca Escolar</h1>
+      <nav>
+        <ul class="nav-left">
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/catalogo.html">Catálogo</a></li>
+          <li class="bibliotecario-only hidden"><a href="/inventario.html">Inventario</a></li>
+        </ul>
+        <ul class="nav-right">
+          <li class="guest-only"><a href="/login.html" class="btn-outline"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+          <li class="user-only hidden dropdown">
+            <a href="#" class="dropdown-toggle" id="user-menu">
+              <i class="fas fa-user-circle"></i> <span id="user-name">Usuario</span>
+            </a>
+            <div class="dropdown-menu">
+              <a href="/perfil.html"><i class="fas fa-id-card"></i> Mi Perfil</a>
+              <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Inventario de Ejemplares</h2>
+
+    <div class="actions-bar">
+      <button id="btn-agregar-libro" class="btn btn-primary"><i class="fas fa-book"></i> Agregar Libro</button>
+      <button id="btn-agregar-ejemplar" class="btn btn-secondary"><i class="fas fa-barcode"></i> Agregar Ejemplar</button>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="buscar-libro" placeholder="Buscar por título o ISBN...">
+      <input type="text" id="buscar-codigo" placeholder="Código de barras...">
+      <select id="estado-filtro">
+        <option value="">Todos los estados</option>
+        <option value="Disponible">Disponible</option>
+        <option value="Prestado">Prestado</option>
+        <option value="Reservado">Reservado</option>
+        <option value="Retirado">Retirado</option>
+        <option value="Deteriorado">Deteriorado</option>
+      </select>
+      <button id="btn-filtrar" class="btn">Filtrar</button>
+    </div>
+
+    <div class="tab-content">
+      <div id="inventario-container" class="inventario-lista">
+        <div class="loader">Cargando ejemplares...</div>
+      </div>
+    </div>
+
+    <div class="pagination" id="paginacion"></div>
+  </main>
+
+  <!-- Modal para agregar/editar libro -->
+  <div id="modal-libro" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-libro-titulo">Agregar Libro</h3>
+        <button class="modal-close" id="cerrar-modal-libro">&times;</button>
+      </div>
+      <form id="form-libro">
+        <div class="modal-body">
+          <input type="text" name="Titulo" placeholder="Título del libro" required>
+          <input type="text" name="ISBN" placeholder="ISBN">
+          <input type="text" name="Autor" placeholder="Autor">
+          <input type="text" name="Editorial" placeholder="Editorial">
+          <textarea name="Descripcion" placeholder="Descripción"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-secondary" id="cancelar-modal-libro">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar ejemplar -->
+  <div id="modal-ejemplar" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-ejemplar-titulo">Agregar Ejemplar</h3>
+        <button class="modal-close" id="cerrar-modal-ejemplar">&times;</button>
+      </div>
+      <form id="form-ejemplar">
+        <div class="modal-body">
+          <input type="text" name="CodigoBarras" placeholder="Código de barras" required>
+          <input type="text" name="Signatura" placeholder="Signatura">
+          <input type="hidden" name="LibroID" id="LibroID">
+          <select name="Condicion">
+            <option value="Nuevo">Nuevo</option>
+            <option value="Bueno" selected>Bueno</option>
+            <option value="Regular">Regular</option>
+            <option value="Deteriorado">Deteriorado</option>
+            <option value="MuyDeteriorado">Muy Deteriorado</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-secondary" id="cancelar-modal-ejemplar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>Biblioteca Escolar &copy; 2025</p>
+    </div>
+  </footer>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/inventario.js"></script>
+</body>
+</html>
